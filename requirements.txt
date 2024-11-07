@@ -1,0 +1,8 @@
+lxml==5.3.0
+parsel==1.9.1
+playwright==1.42.0
+pydantic==2.9.2
+requests==2.32.3
+tenacity==8.2.2
+DrissionPage==4.1.0.9
+
