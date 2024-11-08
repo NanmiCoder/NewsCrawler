@@ -164,3 +164,4 @@ cython_debug/
 toutiao_news/data/
 detik_news/data/
 data/
+.DS_Store

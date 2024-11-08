@@ -273,8 +273,8 @@ class DetikNewsCrawler:
             html = self.fetch_content()
             news_item = self.parse_content(html)
             if len(news_item.texts) == 0 and len(news_item.contents) == 0:
-                logger.error(f"Failed to get title: {news_item.title}, and we will retry get content")
-                raise Exception("Failed to get title")
+                logger.error(f"Failed to get content: {news_item.title}, and we will retry get content")
+                raise Exception("Failed to get content")
             self.save_as_json(news_item)
             logger.info(f"Success to get content from {self.new_url}")
 

@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 # author: relakkes@gmail.com
-# date: 2024-11-07
-# description: 采集头条新闻详情 
+# date: 2024-11-08
+# description: 采集公众号文章
+# https://mp.weixin.qq.com/s/ebMzDPu2zMT_mRgYgtL6eQ
+# https://mp.weixin.qq.com/s/3Sr6nYjE1RF05siTblD2mw
 
 import json
 import logging
 import os
 import pathlib
 from enum import Enum
+import re
 from typing import List, Optional
 
 import requests
@@ -15,9 +18,8 @@ from parsel import Selector
 from pydantic import BaseModel, Field
 from tenacity import RetryError, retry, stop_after_attempt, wait_fixed
 
-## 头条的cookies不需要登录态，随便打开一个头条新闻提取cookies即可
 FIXED_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
-FIXED_COOKIE = '_S_IPAD=0;passport_auth_status_ss=284f6e476da6cdac9ed5ceabe1f2582b%2C;ssid_ucp_sso_v1=1.0.0-KGZkNzVlZDhkMDQ3MWFiYjk5ZDk3OTQ3ZjVlMjM3MTQwMDM2ZjYyMTIKHAiHjM-nnQMQvcaEuQYY9hcgDDCvi8LiBTgIQCYaAmhsIiA5ODcwNDYxYTVkY2Q3MjA2NjljYzY4ZTYzNjQzZmI3Ng;ttwid=1%7Cia--HTETz63DvnEC1KTq8T4unZc9z-8xSWLG2tGoT3U%7C1731006909%7C557cc3728e4e4af4f6f3e73204cc87513274a8cfd9afff287e33f9f477c704aa;sso_uid_tt_ss=928dce35007c9d519658774c6beef45e;csrftoken=f281acfa1c9f03f87632ef708982c9dc;local_city_cache=%E6%B7%B1%E5%9C%B3;toutiao_sso_user_ss=9870461a5dcd720669cc68e63643fb76;_ga=GA1.1.1766929141.1726812239;_ga_QEHZPBE5HH=GS1.1.1731005115.10.1.1731006909.0.0.0;_S_DPR=2;_S_WIN_WH=2316_1294;gfkadpd=24,6457;passport_csrf_token=bd28f23b87bcf4301429268682d56420;s_v_web_id=verify_m1abf6k9_gAtTZmw0_vlBj_42X9_9PKg_TFcilJq78KHB;tt_scid=pZTSdqwHuTu3FALst92kSb-UhAGpdIQ.8B8tQHtQ2Ziuy6eGbvI4UIC8k0BGzOk715fb;tt_webid=7344407742516610612;ttcid=e3d8cb0ce95f459991afa37a90490daf25'
+FIXED_COOKIE = '_qimei_fingerprint=01253b31e9ec4aed2e41ac0e979727ed;_qimei_uuid42=17b0c10360c100c8fcc7c7d843c9c65a405ac57763;o_cookie=524134442;RK=4clVFXZXao;_ga_8YVFNWD1KC=GS1.2.1730678197.1.0.1730678197.0.0.0;pgv_pvid=3981322644;rewardsn=;_ga=GA1.2.1404980183.1730678197;_qimei_h38=5c9a2cfae91848260c187a060300000d817710;_qimei_q36=;ptcz=e9eaa9a8966bdfd1ec504e7efb587377ef47aff780a78b2c0197b3eb9f86d8d1;qq_domain_video_guid_verify=7d82e0c91151b66b;wxtokenkey=777'
 
 logger = logging.getLogger("TouTiaoNewsCrawler")
 
@@ -49,7 +51,7 @@ class ContentItem(BaseModel):
 
 class NewsMetaInfo(BaseModel):
     author_name: str = Field(default="", title="作者")
-    author_url: str = Field(default="", title="作者链接")
+    author_url: str = Field(default="", title="作者链接")    
     publish_time: str = Field(default="", title="发布时间")
 
 
@@ -64,12 +66,12 @@ class NewsItem(BaseModel):
     videos: Optional[List[str]] = Field(default=[], title="新闻视频")
 
 
-class ToutiaoNewsCrawler:
+class WeChatNewsCrawler:
     def __init__(self, new_url: str, save_path: str = "data/", headers: RequestHeaders = RequestHeaders()):
-        """初始化头条新闻详情爬虫
+        """初始化公众号文章详情爬虫
 
         Args:
-            new_url (str): 新闻详情页url
+            new_url (str): 公众号文章详情页url
             save_path (str, optional): 保存路径. Defaults to "".
             headers (RequestHeaders, optional): 请求头. Defaults to RequestHeaders().
         """
@@ -81,46 +83,44 @@ class ToutiaoNewsCrawler:
 
     @property
     def get_base_url(self) -> str:
-        """获取新闻详情页基础url
+        """获取公众号详情页基础url
             
         Returns:
-            str: 新闻详情页基础url
+            str: 公众号详情页基础url
         """
-        return self.new_url.split("/article/")[0]
+        return "https://mp.weixin.qq.com"
 
     @property
     def get_article_id(self) -> str:
-        """获取新闻详情页文章id
-            eg: https://www.toutiao.com/article/7404384826024935990/?log_from=6ca9c55804822_1729740822770
-                return: 7404384826024935990
+        """获取公众号详情页文章id
+            eg: https://mp.weixin.qq.com/s/3Sr6nYjE1RF05siTblD2mw?may_be_params=test
+                return: 3Sr6nYjE1RF05siTblD2mw
         Returns:
-            str: 新闻详情页文章id
+            str: 公众号详情页文章id
         """
         try:
-            news_id = self.new_url.split("/article/")[1].split("?")[0]
-            if news_id.endswith("/"):
-                news_id = news_id[:-1]
+            news_id = self.new_url.split("/s/")[1].split("?")[0]                        
             return news_id
         except Exception as e:
             raise Exception(f"解析文章ID失败，请检查URL是否正确")
 
     def get_save_json_path(self) -> str:
-        """获取新闻详情页保存的json文件路径
+        """获取公众号文章详情页保存的json文件路径
 
         Returns:
-            str: 新闻详情页保存的json文件路径
+            str: 公众号文章详情页保存的json文件路径
         """
         return os.path.join(self.save_path, f"{self.get_article_id}.json")
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
     def fetch_content(self) -> str:
-        """获取新闻详情页内容
+        """获取公众号文章详情页内容
            该方法会有重试机制，如果状态码不是200，则重试3次每次等待1秒
         Raises:
             Exception: 获取内容失败
 
         Returns:
-            str: 新闻详情页内容
+            str: 公众号文章详情页内容
         """
         logger.info(f"Start to fetch content from {self.new_url}")
         # from curl_cffi import requests
@@ -130,88 +130,86 @@ class ToutiaoNewsCrawler:
             raise Exception(f"Failed to fetch content: {response.status_code}")
         response.encoding = "utf-8"
         return response.text
-
-    def parse_html_to_news_meta(self, html_content: str) -> NewsMetaInfo:
-        """解析新闻详情页元信息
+    
+    def _parse_publish_time(self, html_content: str) -> str:
+        """解析公众号文章详情页发布时间
 
         Args:
-            html_content (str): 新闻详情页内容
+            html_content (str): 公众号文章详情页内容
 
         Returns:
-            NewsMetaInfo: 新闻元信息
+            str: 公众号文章详情页发布时间
+        """
+        js_re_pattern = r"var createTime = '(\d{4}-\d{2}-\d{2} \d{2}:\d{2})';"
+        match = re.search(js_re_pattern, html_content)
+        if match:
+            return match.group(1)
+        return ""
+    
+    def parse_html_to_news_meta(self, html_content: str) -> NewsMetaInfo:
+        """解析公众号文章详情页元信息
+
+        Args:
+            html_content (str): 公众号文章详情页内容
+
+        Returns:
+            NewsMetaInfo: 公众号文章元信息
         """
         logger.info(f"Start to parse html to news meta, news_url: {self.new_url}")
+        
         sel = Selector(text=html_content)
-
-        publish_time = sel.xpath("//div[@class='article-meta']/span[1]/text()").get() or ""
-        author_name = sel.xpath("//div[@class='article-meta']/span[@class='name']/a/text()").get() or ""
-        author_url = sel.xpath("//div[@class='article-meta']/span[@class='name']/a/@href").get() or ""
+        publish_time = self._parse_publish_time(html_content)
+        wechat_name = sel.xpath("string(//span[@id='profileBt'])").get("").strip() or ""
+        wechat_author_url = sel.xpath("string(//div[@id='meta_content']/span[@class='rich_media_meta rich_media_meta_text'])").get("").strip() or ""
+        author_name = f"{wechat_name} - {wechat_author_url}"        
 
         return NewsMetaInfo(
             publish_time=publish_time.strip(),
             author_name=author_name.strip(),
-            author_url=self.get_base_url + author_url.strip(),
+            author_url=""# 公众号文章详情页中没有作者链接
         )
 
     def parse_html_to_news_content(self, html_content: str) -> List[ContentItem]:
-        """解析新闻详情页内容
+        """解析公众号文章详情页内容
 
         Args:
-            html_content (str): 新闻详情页内容
+            html_content (str): 公众号文章内容
 
         Returns:
-            List[ContentItem]: 新闻内容
+            List[ContentItem]: 公众号文章内容
         """
         contents = []
         selector = Selector(text=html_content)
 
-        elements = selector.xpath('//article/*')
+        elements = selector.xpath('//div[@id="js_content"]/*')
         for element in elements:
-            if element.root.tag == 'p':
-                text = element.xpath('string()').get('').strip()
-                if text:
-                    contents.append(ContentItem(type=ContentType.TEXT, content=text, desc=text))
-
-            # img标签有可能被包括在div、p标签中所以要特殊处理一下                     
-            if element.root.tag in ['img', 'div', 'p']:
-                if element.root.tag == 'img':
-                    img_url = element.xpath('./@src').get('')
-                    if img_url:
-                        contents.append(ContentItem(type=ContentType.IMAGE, content=img_url, desc=img_url))
-                else:
-                    img_urls = element.xpath(".//img/@src").getall()
-                    for img_url in img_urls:
-                        if img_url:
-                            contents.append(ContentItem(type=ContentType.IMAGE, content=img_url, desc=img_url))
-
-            if element.root.tag == 'video':
-                video_url = element.xpath('./@src').get('')
-                if video_url:
-                    contents.append(ContentItem(type=ContentType.VIDEO, content=video_url, desc=video_url))
+            # todo 解析内容
+            pass
 
         return contents
 
     def parse_content(self, html: str) -> NewsItem:
-        """解析新闻详情页内容
+        """解析公众号文章内容
 
         Args:
-            html (str): 新闻详情页内容
+            html (str): 公众号文章内容
 
         Returns:
-            NewsItem: 新闻详情
+            NewsItem: 公众号文章详情
         """
         result = NewsItem()
         selector = Selector(text=html)
 
-        # 获取标题
-        title = selector.xpath('//h1/text()').get('')
+        # 获取标题微信公众号这边因为内容创作者的富文本编辑可能是多样的
+        # 用h1的方式可能正文内容中也会包含标题，所以这里用h1+ID的方式获取标题
+        title = selector.xpath('//h1[@id="activity-name"]/text()').get('')
         if not title:
             raise Exception("Failed to get title")
 
         meta_info = self.parse_html_to_news_meta(html)
         contents = self.parse_html_to_news_content(html)
 
-        result.title = title
+        result.title = title.strip()
         result.news_url = self.new_url
         result.news_id = self.get_article_id
         result.meta_info = meta_info
@@ -225,10 +223,10 @@ class ToutiaoNewsCrawler:
         return result
 
     def save_as_json(self, news_item: NewsItem):
-        """保存新闻详情为json文件
+        """保存公众号文章详情为json文件
 
         Args:
-            news_item (NewsItem): 新闻详情
+            news_item (NewsItem): 公众号文章详情
         """
         pathlib.Path(self.save_path).mkdir(parents=True, exist_ok=True)
         with open(self.save_file_name, 'w', encoding='utf-8') as f:
@@ -240,8 +238,9 @@ class ToutiaoNewsCrawler:
 
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
         def retry_fetch_content():
-            html = self.fetch_content()
-            news_item = self.parse_content(html)
+            html = self.fetch_content()          
+            news_item = self.parse_content(html)           
+            logger.info(f"parse content from {self.new_url}, result: {news_item}, we will check if the content is empty.")
             if len(news_item.texts) == 0 and len(news_item.contents) == 0:
                 logger.error(f"Failed to get content: {news_item.title}, and we will retry get content ...")
                 raise Exception("Failed to get content")
@@ -257,8 +256,8 @@ class ToutiaoNewsCrawler:
 
 
 if __name__ == "__main__":
-    article_url1 = "https://www.toutiao.com/article/7434425099895210546/?log_from=62fe902b9dcea_1730987379758"
-    article_url2 = "https://www.toutiao.com/article/7404384826024935990/?log_from=6ca9c55804822_1729740822770"
+    article_url1 = "https://mp.weixin.qq.com/s/ebMzDPu2zMT_mRgYgtL6eQ"
+    article_url2 = "https://mp.weixin.qq.com/s/3Sr6nYjE1RF05siTblD2mw"
     for article_url in [article_url1, article_url2]:
-        crawler = ToutiaoNewsCrawler(article_url, save_path="data/")
+        crawler = WeChatNewsCrawler(article_url, save_path="data/")
         crawler.run()
