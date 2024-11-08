@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 # author: relakkes@gmail.com
-# date: 2024-11-08
-# description: 采集公众号文章
-# https://mp.weixin.qq.com/s/ebMzDPu2zMT_mRgYgtL6eQ
-# https://mp.weixin.qq.com/s/3Sr6nYjE1RF05siTblD2mw
+# date: 2024-11-09
+# description: 采集公众号文章详情
 
 import json
 import logging
 import os
 import pathlib
-from enum import Enum
 import re
+from enum import Enum
 from typing import List, Optional
 
 import requests
@@ -19,9 +17,10 @@ from pydantic import BaseModel, Field
 from tenacity import RetryError, retry, stop_after_attempt, wait_fixed
 
 FIXED_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
-FIXED_COOKIE = '_qimei_fingerprint=01253b31e9ec4aed2e41ac0e979727ed;_qimei_uuid42=17b0c10360c100c8fcc7c7d843c9c65a405ac57763;o_cookie=524134442;RK=4clVFXZXao;_ga_8YVFNWD1KC=GS1.2.1730678197.1.0.1730678197.0.0.0;pgv_pvid=3981322644;rewardsn=;_ga=GA1.2.1404980183.1730678197;_qimei_h38=5c9a2cfae91848260c187a060300000d817710;_qimei_q36=;ptcz=e9eaa9a8966bdfd1ec504e7efb587377ef47aff780a78b2c0197b3eb9f86d8d1;qq_domain_video_guid_verify=7d82e0c91151b66b;wxtokenkey=777'
+# 微信公众号不带cookie也可以访问，但是不确定是否爬取多了会有影响，这里可以填写自用cookie
+FIXED_COOKIE = ''
 
-logger = logging.getLogger("TouTiaoNewsCrawler")
+logger = logging.getLogger("WeChatNewsCrawler")
 
 
 def init_logger():
@@ -51,7 +50,7 @@ class ContentItem(BaseModel):
 
 class NewsMetaInfo(BaseModel):
     author_name: str = Field(default="", title="作者")
-    author_url: str = Field(default="", title="作者链接")    
+    author_url: str = Field(default="", title="作者链接")
     publish_time: str = Field(default="", title="发布时间")
 
 
@@ -64,6 +63,185 @@ class NewsItem(BaseModel):
     texts: List[str] = Field(default=[], title="新闻正文")
     images: List[str] = Field(default=[], title="新闻图片")
     videos: Optional[List[str]] = Field(default=[], title="新闻视频")
+
+
+class WechatContentParser:
+    """
+    微信公众号文章正文内容解析器
+    """
+    
+    def __init__(self):
+        """初始化微信公众号文章正文内容解析器"""
+        self._contents: List[ContentItem] = []
+
+    def parse_html_to_news_content(self, html_content: str) -> List[ContentItem]:
+        """解析公众号文章详情页内容，保持段落结构
+           微信公众号的由于出在多编辑器的情况，所以解析比较复杂
+
+        Args:
+            html_content (str): 公众号文章内容
+
+        Returns:
+            List[ContentItem]: 公众号文章内容，每个段落作为独立的ContentItem
+        """
+        selector = Selector(text=html_content)
+
+        content_node = selector.xpath('//div[@id="js_content"]')
+        if not content_node:
+            return self._contents
+
+        # 处理所有直接子节点
+        for node in content_node.xpath('./*'):
+            self._process_content_node(node)
+
+        contents = [item for item in self._contents if item.content.strip()]
+        return self._remove_duplicate_contents(contents)
+    
+    def _remove_duplicate_contents(self, contents: List[ContentItem]) -> List[ContentItem]:
+        """移除重复内容
+
+        Args:
+            contents (List[ContentItem]): 内容列表
+
+        Returns:
+            List[ContentItem]: 去重后的内容列表
+        """ 
+        # 判个重
+        unique_contents = []
+        seen_contents = set()
+        for item in contents:
+            content_key = f"{item.type}:{item.content}"
+            if content_key not in seen_contents:
+                seen_contents.add(content_key)
+                unique_contents.append(item)
+
+        return unique_contents
+
+    @staticmethod
+    def _process_media(node: Selector) -> Optional[ContentItem]:
+        """处理媒体内容(图片和视频)
+
+        Args:
+            node (Selector): 节点
+
+        Returns:
+            Optional[ContentItem]: 媒体内容
+        """
+        if node.root.tag == 'img':
+            img_url = node.attrib.get('src', '') or node.attrib.get('data-src', '')
+            if img_url:
+                return ContentItem(type=ContentType.IMAGE, content=img_url)
+        elif node.root.tag in ['video', 'iframe']:
+            video_url = node.attrib.get('src', '')
+            if video_url:
+                return ContentItem(type=ContentType.VIDEO, content=video_url)
+
+        return None
+
+    @staticmethod
+    def _process_text_block(node: Selector) -> Optional[str]:
+        """处理文本块，返回处理后的文本
+
+        Args:
+            node (Selector): 节点
+
+        Returns:
+            Optional[str]: 处理后的文本
+        """
+        # 跳过不需要的标签
+        if node.root.tag in ['script', 'style']:
+            return None
+
+        # 获取当前节点的文本
+        text = node.xpath('string(.)').get('').strip()
+        if not text:
+            return None
+
+        return text
+
+    def _process_list_item(self, node: Selector) -> Optional[str]:
+        """处理列表项，添加适当的前缀
+
+        Args:
+            node (Selector): 节点
+
+        Returns:
+            Optional[str]: 处理后的文本
+        """
+        text = self._process_text_block(node)
+        if not text:
+            return None
+
+        # 如果是有序列表项，尝试获取序号
+        if node.xpath('./ancestor::ol'):
+            # 计算当前li是ol中的第几个
+            position = len(node.xpath('./preceding-sibling::li')) + 1
+            return f"{position}. {text}"
+        else:
+            # 无序列表项添加符号
+            return f"• {text}"
+
+    def _process_content_node(self, node: Selector):
+        """处理内容节点
+
+        Args:
+            node (Selector): 节点
+        """
+        # 对于section等容器标签，处理其子元素
+        if node.root.tag in ['section', 'div']:
+            for child in node.xpath('./*'):
+                self._process_content_node(child)
+            return
+
+        # 处理标题内容
+        if node.root.tag in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+            text = self._process_text_block(node)
+            if text:
+                self._contents.append(ContentItem(type=ContentType.TEXT, content=text))
+            return
+
+        # 尽可能的还原段落中的罗列陈述（通常是在富文本中编辑器的表现为ul、ol）
+        if node.root.tag in ['ul', 'ol']:
+            list_items = []
+            for li in node.xpath('.//li'):
+                item_text = self._process_list_item(li)
+                if item_text:
+                    list_items.append(item_text)
+            if len(list_items) > 0:
+                for item in list_items:
+                    self._contents.append(ContentItem(
+                        type=ContentType.TEXT,
+                        content=item
+                    ))
+            return
+
+        # 另外也有可能li这种标签它不再ul/ol中，而是单独的列表项，也补偿一下吧
+        if node.root.tag == 'li':
+            text = self._process_list_item(node)
+            if text:
+                self._contents.append(ContentItem(type=ContentType.TEXT, content=text))
+            return
+
+        # 检查是否是媒体内容
+        media_content = self._process_media(node)
+        if media_content:
+            self._contents.append(media_content)
+            return
+
+        # 处理段落内容
+        if node.root.tag == 'p':
+            # 有一些富文本编辑的设定会在将img标签包括在p标签中，这里做一个补偿。
+            if node.xpath('.//img') or node.xpath('.//video') or node.xpath('.//iframe'):
+                maybe_exist_nodes = node.xpath('.//img | .//video | .//iframe')
+                for maybe_exist_node in maybe_exist_nodes:
+                    media_content = self._process_media(maybe_exist_node)
+                    if media_content:
+                        self._contents.append(media_content)
+
+            text = self._process_text_block(node)
+            if text:
+                self._contents.append(ContentItem(type=ContentType.TEXT, content=text))
+            return
 
 
 class WeChatNewsCrawler:
@@ -80,6 +258,7 @@ class WeChatNewsCrawler:
         self.save_path = save_path
         self.save_file_name = self.get_save_json_path()
         self.headers = headers.model_dump()
+        self._content_parser = WechatContentParser()
 
     @property
     def get_base_url(self) -> str:
@@ -99,7 +278,7 @@ class WeChatNewsCrawler:
             str: 公众号详情页文章id
         """
         try:
-            news_id = self.new_url.split("/s/")[1].split("?")[0]                        
+            news_id = self.new_url.split("/s/")[1].split("?")[0]
             return news_id
         except Exception as e:
             raise Exception(f"解析文章ID失败，请检查URL是否正确")
@@ -130,8 +309,9 @@ class WeChatNewsCrawler:
             raise Exception(f"Failed to fetch content: {response.status_code}")
         response.encoding = "utf-8"
         return response.text
-    
-    def _parse_publish_time(self, html_content: str) -> str:
+
+    @staticmethod
+    def _parse_publish_time(html_content: str) -> str:
         """解析公众号文章详情页发布时间
 
         Args:
@@ -145,7 +325,7 @@ class WeChatNewsCrawler:
         if match:
             return match.group(1)
         return ""
-    
+
     def parse_html_to_news_meta(self, html_content: str) -> NewsMetaInfo:
         """解析公众号文章详情页元信息
 
@@ -156,37 +336,20 @@ class WeChatNewsCrawler:
             NewsMetaInfo: 公众号文章元信息
         """
         logger.info(f"Start to parse html to news meta, news_url: {self.new_url}")
-        
+
         sel = Selector(text=html_content)
         publish_time = self._parse_publish_time(html_content)
         wechat_name = sel.xpath("string(//span[@id='profileBt'])").get("").strip() or ""
-        wechat_author_url = sel.xpath("string(//div[@id='meta_content']/span[@class='rich_media_meta rich_media_meta_text'])").get("").strip() or ""
-        author_name = f"{wechat_name} - {wechat_author_url}"        
+        wechat_author_url = sel.xpath(
+            "string(//div[@id='meta_content']/span[@class='rich_media_meta rich_media_meta_text'])").get(
+            "").strip() or ""
+        author_name = f"{wechat_name} - {wechat_author_url}"
 
         return NewsMetaInfo(
             publish_time=publish_time.strip(),
             author_name=author_name.strip(),
-            author_url=""# 公众号文章详情页中没有作者链接
+            author_url=""  # 公众号文章详情页中没有作者链接
         )
-
-    def parse_html_to_news_content(self, html_content: str) -> List[ContentItem]:
-        """解析公众号文章详情页内容
-
-        Args:
-            html_content (str): 公众号文章内容
-
-        Returns:
-            List[ContentItem]: 公众号文章内容
-        """
-        contents = []
-        selector = Selector(text=html_content)
-
-        elements = selector.xpath('//div[@id="js_content"]/*')
-        for element in elements:
-            # todo 解析内容
-            pass
-
-        return contents
 
     def parse_content(self, html: str) -> NewsItem:
         """解析公众号文章内容
@@ -200,14 +363,13 @@ class WeChatNewsCrawler:
         result = NewsItem()
         selector = Selector(text=html)
 
-        # 获取标题微信公众号这边因为内容创作者的富文本编辑可能是多样的
-        # 用h1的方式可能正文内容中也会包含标题，所以这里用h1+ID的方式获取标题
+        # 获取标题微信公众号这边因为内容创作者的富文本编辑可能是多样的,用h1的方式可能正文内容中也会包含h1标签，所以这里用h1+ID的方式获取标题
         title = selector.xpath('//h1[@id="activity-name"]/text()').get('')
         if not title:
             raise Exception("Failed to get title")
 
         meta_info = self.parse_html_to_news_meta(html)
-        contents = self.parse_html_to_news_content(html)
+        contents = self._content_parser.parse_html_to_news_content(html)
 
         result.title = title.strip()
         result.news_url = self.new_url
@@ -238,9 +400,10 @@ class WeChatNewsCrawler:
 
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
         def retry_fetch_content():
-            html = self.fetch_content()          
-            news_item = self.parse_content(html)           
-            logger.info(f"parse content from {self.new_url}, result: {news_item}, we will check if the content is empty.")
+            html = self.fetch_content()
+            news_item = self.parse_content(html)
+            logger.info(
+                f"parse content from {self.new_url}, result: {news_item}, we will check if the content is empty.")
             if len(news_item.texts) == 0 and len(news_item.contents) == 0:
                 logger.error(f"Failed to get content: {news_item.title}, and we will retry get content ...")
                 raise Exception("Failed to get content")
@@ -258,6 +421,7 @@ class WeChatNewsCrawler:
 if __name__ == "__main__":
     article_url1 = "https://mp.weixin.qq.com/s/ebMzDPu2zMT_mRgYgtL6eQ"
     article_url2 = "https://mp.weixin.qq.com/s/3Sr6nYjE1RF05siTblD2mw"
-    for article_url in [article_url1, article_url2]:
+    article_url3 = "https://mp.weixin.qq.com/s/zCNL9Rgoj25cWgQo7HPupw"
+    for article_url in [article_url1, article_url2, article_url3]:
         crawler = WeChatNewsCrawler(article_url, save_path="data/")
         crawler.run()

@@ -114,3 +114,44 @@ if __name__ == "__main__":
 
 ### 输出结果
 以文章ID作为JSON文件名，保存到脚本运行的data目录下，`DetikNewsCrawler`也支持传入`save_path`参数指定保存路径
+
+
+## 微信公众号新闻爬虫
+
+### 代码使用方式
+```python
+
+from wechat_news import WeChatNewsCrawler
+from wechat_news import RequestHeaders as WeChatRequestHeaders
+from libs import drissionpage_driver, playwright_driver
+
+# 是否需要自动获取headers(User-Agent和Cookie)
+NEED_AUTO_GET_HEADERS = False
+
+
+def get_wechat_news_detail(new_url: str):
+    """获取微信公众号新闻详情
+
+    Args:
+        new_url (str): 新闻详情页URL
+    """
+    if NEED_AUTO_GET_HEADERS:
+        headers = playwright_driver.get_headers(new_url)
+        headers = WeChatRequestHeaders(
+            user_agent=headers.user_agent,
+            cookie=headers.cookie
+        )
+        wechat_news = WeChatNewsCrawler(new_url, headers=headers)
+    else:
+        wechat_news = WeChatNewsCrawler(new_url)
+    return wechat_news.run()
+
+
+if __name__ == "__main__":
+    wechat_url = "https://mp.weixin.qq.com/s/3Sr6nYjE1RF05siTblD2mw"
+    get_wechat_news_detail(wechat_url)
+```
+
+### 输出结果
+以文章ID作为JSON文件名，保存到脚本运行的data目录下，`WeChatNewsCrawler`也支持传入`save_path`参数指定保存路径
+    
