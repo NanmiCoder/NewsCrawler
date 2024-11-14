@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # author: relakkes@gmail.com
 # date: 2024-11-15
-# description: naver news 采集器
+# description: lennysnewsletter新闻详情爬虫
 
 import json
 import logging
@@ -16,9 +16,9 @@ from pydantic import BaseModel, Field
 from tenacity import RetryError, retry, stop_after_attempt, wait_fixed
 
 FIXED_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
-FIXED_COOKIE = "NAC=rpJDBYQa8Mxu; NACT=1; BA_DEVICE=105bf8f8-2a73-4b2f-bcbe-caf69282df11; NNB=D3M67LB7FQ3GO; BUC=Jabp6uagPvoJOfK-0YiUWPlEPu939nX6xkrTwVxttog=; JSESSIONID=05B14546153BE5D2B669A54AA439F9E7.jvm1"
+FIXED_COOKIE = "ab_experiment_sampled=%22false%22; ab_testing_id=%22a5afcd47-8198-4089-bb2a-ba8628b6da67%22; _ga=GA1.1.462650913.1731604007; ajs_anonymous_id=%22f28ff03f-6d49-40d4-8b92-7a9e0e0f7d21%22; ajs_anonymous_id=%22f28ff03f-6d49-40d4-8b92-7a9e0e0f7d21%22; cookie_storage_key=f6fcf3b9-e78e-4632-a1d3-619ddf37f24a; __cf_bm=ZwuFiT7hXwcGTacEb2.nrvynAmW2CQRRCNGZuxDVwKI-1731625491-1.0.1.1-ynp_03wP9EFEDiUBZZsjvUb6GSWyCLp31QV3BxSnQ8mKa9ZYLmkeTbbLFYJWguPdsJcmvpxtwJvfUreruASOXg; visit_id=%7B%22id%22%3A%224d9a1e8c-6a1e-4ede-a2bc-e7423c481253%22%2C%22timestamp%22%3A%222024-11-14T23%3A04%3A54.150Z%22%7D; _gcl_au=1.1.2085925695.1731625495; _ga_0V8B24EKGY=GS1.1.1731625493.2.1.1731625631.0.0.0; AWSALBTG=HOU6d99orSPuxcqgmTXGKJ84//TsxR11Uc12QiUerjTqWhnVzPX96psvfS2R1PnRCn/yvLnHE3yKmiguuwwSkLIg66lQy0edam8QRtR+yMuS1wmXZcUwe2/LuqBgzh6FHAnkPDIW8erxGQGSXZjBji2k+/ksAXLwEteoi5ORzH2+; AWSALBTGCORS=HOU6d99orSPuxcqgmTXGKJ84//TsxR11Uc12QiUerjTqWhnVzPX96psvfS2R1PnRCn/yvLnHE3yKmiguuwwSkLIg66lQy0edam8QRtR+yMuS1wmXZcUwe2/LuqBgzh6FHAnkPDIW8erxGQGSXZjBji2k+/ksAXLwEteoi5ORzH2+; _dd_s=rum=0&expire=1731626983227"
 
-logger = logging.getLogger("NaverNewsCrawler")
+logger = logging.getLogger("LennysNewsletterCrawler")
 
 
 def init_logger():
@@ -58,6 +58,7 @@ class NewsMetaInfo(BaseModel):
 
 class NewsItem(BaseModel):
     title: str = Field(default="", title="新闻标题")
+    subtitle: str = Field(default="", title="新闻副标题")
     news_url: str = Field(default="", title="新闻链接")
     news_id: str = Field(default="", title="新闻ID")
     meta_info: NewsMetaInfo = Field(default=NewsMetaInfo(), title="新闻元信息")
@@ -67,7 +68,7 @@ class NewsItem(BaseModel):
     videos: Optional[List[str]] = Field(default=[], title="新闻视频")
 
 
-class NaverNewsContentParser:
+class LennysNewsletterContentParser:
     """
     新闻详情页内容解析器
     """
@@ -87,7 +88,7 @@ class NaverNewsContentParser:
         """
         selector = Selector(text=html_content)
 
-        content_node = selector.xpath("//div[@class='se-main-container']")
+        content_node = selector.xpath("//div[@class='available-content']")
         if not content_node:
             return self._contents
 
@@ -272,14 +273,14 @@ class NaverNewsContentParser:
             return
 
 
-class NaverNewsCrawler:
+class LennysNewsletterCrawler:
     def __init__(
         self,
         new_url: str,
         save_path: str = "data/",
         headers: RequestHeaders = RequestHeaders(),
     ):
-        """初始化Naver新闻详情爬虫
+        """初始化LennysNewsletter新闻详情爬虫
 
         Args:
             new_url (str): 新闻详情页url
@@ -291,8 +292,7 @@ class NaverNewsCrawler:
         self.save_path = save_path
         self.save_file_name = self.get_save_json_path()
         self.headers = headers.model_dump()
-        self._content_parser = NaverNewsContentParser()
-        self.iframe_url = self.get_iframe_url_path()
+        self._content_parser = LennysNewsletterContentParser()
 
     @property
     def get_base_url(self) -> str:
@@ -301,14 +301,15 @@ class NaverNewsCrawler:
         Returns:
             str: 新闻详情页基础url
         """
-        return "https://blog.naver.com"
+        return "https://www.lennysnewsletter.com/"
 
     @property
     def get_article_id(self) -> str:
         """获取新闻详情页文章id
-            eg: https://blog.naver.com/orangememories/223618759620
+            eg: https://www.lennysnewsletter.com/p/how-duolingo-reignited-user-growth
+
         Returns:
-            str: 新闻详情页文章id: 223618759620
+            str: 新闻详情页文章id: how-duolingo-reignited-user-growth
         """
         try:
             news_id = self.new_url.split("?")[0].split("/")[-1]
@@ -337,31 +338,11 @@ class NaverNewsCrawler:
             str: 新闻详情页内容
         """
         logger.info(f"Start to fetch content from {self.new_url}")
-        # 真实的请求地址在iframe中，使用iframe的url请求
-        response = requests.get(self.iframe_url, headers=self.headers)
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch content: {response.status_code}")
-        response.encoding = "utf-8"
-        return response.text
-
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
-    def get_iframe_url_path(self) -> str:
-        """获取新闻详情页iframe的url路径
-
-        Returns:
-            str: 新闻详情页iframe的url路径
-        """
         response = requests.get(self.new_url, headers=self.headers)
         if response.status_code != 200:
             raise Exception(f"Failed to fetch content: {response.status_code}")
         response.encoding = "utf-8"
-        selector = Selector(text=response.text)
-        iframe_url = selector.xpath("//iframe[@id='mainFrame']/@src").get("")
-        if not iframe_url:
-            raise Exception("Failed to get iframe url")
-        logger.info(f"Success to get iframe url: {iframe_url}")
-
-        return self.get_base_url + iframe_url
+        return response.text
 
     def parse_html_to_news_meta(self, html_content: str) -> NewsMetaInfo:
         """解析新闻详情页元信息
@@ -375,11 +356,15 @@ class NaverNewsCrawler:
         logger.info(f"Start to parse html to news meta, news_url: {self.new_url}")
         sel = Selector(text=html_content)
 
+        author_xpath = "//div[@class='post-header']//div[contains(@class, 'profile-hover-card-target')]/a"
         publish_time = (
-            sel.xpath("//span[@class='se_publishDate pcol2']/text()").get() or ""
+            sel.xpath(
+                "//div[@class='post-header']//div[@class='pencraft pc-display-flex pc-gap-4 pc-reset']/div/text()"
+            ).get()
+            or ""
         )
-        author_name = sel.xpath("//span[@class='nick']/a/text()").get() or ""
-        author_url = sel.xpath("//span[@class='nick']/a/@href").get() or ""
+        author_name = sel.xpath(author_xpath + "/text()").get() or ""
+        author_url = sel.xpath(author_xpath + "/@href").get() or ""
 
         return NewsMetaInfo(
             publish_time=publish_time.strip(),
@@ -411,16 +396,18 @@ class NaverNewsCrawler:
         selector = Selector(text=html)
 
         # 获取标题
-        title = selector.xpath(
-            "string(//div[@class='se-module se-module-text se-title-text']//span)"
-        ).get("")
+        title = selector.xpath("//h1/text()").get()
         if not title:
             raise Exception("Failed to get title")
+
+        # 获取副标题
+        subtitle = selector.xpath("//h3/text()").get() or ""
 
         meta_info = self.parse_html_to_news_meta(html)
         contents = self.parse_html_to_news_content(html)
 
         result.title = title
+        result.subtitle = subtitle
         result.news_url = self.new_url
         result.news_id = self.get_article_id
         result.meta_info = meta_info
@@ -480,8 +467,10 @@ class NaverNewsCrawler:
 
 
 if __name__ == "__main__":
-    article_url1 = "https://blog.naver.com/orangememories/223618759620"
-    article_url2 = "https://blog.naver.com/hyobin_mo/223660806667"
+    article_url1 = (
+        "https://www.lennysnewsletter.com/p/how-duolingo-reignited-user-growth"
+    )
+    article_url2 = "https://www.lennysnewsletter.com/p/on-being-funny-at-work"
     for article_url in [article_url1, article_url2]:
-        crawler = NaverNewsCrawler(article_url, save_path="data/")
+        crawler = LennysNewsletterCrawler(article_url, save_path="data/")
         crawler.run()
