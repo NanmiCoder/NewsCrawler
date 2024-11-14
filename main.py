@@ -3,19 +3,16 @@
 # date: 2024-11-08
 # description: 主函数调用两个新闻爬虫示例代码
 
-from libs import drissionpage_driver, playwright_driver
-
 # detik新闻爬虫
 from detik_news import DetikNewsCrawler
 from detik_news import RequestHeaders as DetikRequestHeaders
-
+from libs import drissionpage_driver, playwright_driver
 # 头条新闻爬虫
 from toutiao_news import RequestHeaders as ToutiaoRequestHeaders
 from toutiao_news import ToutiaoNewsCrawler
-
 # 微信公众号新闻爬虫
-from wechat_news import WeChatNewsCrawler
 from wechat_news import RequestHeaders as WeChatRequestHeaders
+from wechat_news import WeChatNewsCrawler
 
 # 是否需要自动获取headers(User-Agent和Cookie)
 NEED_AUTO_GET_HEADERS = False
