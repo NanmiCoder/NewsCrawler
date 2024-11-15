@@ -88,19 +88,40 @@ class PixabayBaseAPI:
         retry_times: int = 3,
         retry_delay: int = 1,
     ):
+        """初始化Pixabay API基类
+
+        Args:
+            api_key_pool: API密钥池
+            proxy_provider: 代理提供者
+            retry_times: 重试次数
+            retry_delay: 重试延迟
+        """
         self.api_key_pool = api_key_pool
         self.proxy_provider = proxy_provider
         self.retry_times = retry_times
         self.retry_delay = retry_delay
 
     def _get_proxies(self) -> Optional[Dict[str, str]]:
+        """获取代理配置
+
+        Returns:
+            Dict[str, str] | None: 代理配置, 如果没有代理则返回None
+        """
         if not self.proxy_provider:
             return None
         proxy_config = self.proxy_provider.get_proxy()
         return proxy_config.to_proxy_dict()
 
     def _update_rate_limit(self, current_key: str, response: requests.Response):
-        """更新API密钥的速率限制信息"""
+        """更新API密钥的速率限制信息
+
+        Args:
+            current_key: 当前使用的API密钥
+            response: 响应
+
+        Raises:
+            Exception: 当响应状态码不是200时抛出异常
+        """
         remaining = int(response.headers.get("X-RateLimit-Remaining", 0))
         reset = int(response.headers.get("X-RateLimit-Reset", 60))
         self.api_key_pool.update_rate_limit(current_key, remaining, reset)

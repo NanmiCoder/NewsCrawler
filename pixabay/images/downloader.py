@@ -20,7 +20,16 @@ class PixabayAPI(PixabayBaseAPI):
     def search_resources(
         self, query: str, per_page: int, page: int
     ) -> ImageSearchResponse:
-        """搜索图片"""
+        """搜索图片
+
+        Args:
+            query: 关键词
+            per_page: 每页数量
+            page: 页码
+
+        Returns:
+            ImageSearchResponse: 图片搜索响应
+        """
         params = {
             "q": query,
             "per_page": per_page,
@@ -53,7 +62,16 @@ class PixabayAPI(PixabayBaseAPI):
         max_images: Optional[int] = None,
         per_page: int = 80,
     ) -> Generator[Image, None, None]:
-        """搜索所有图片的生成器"""
+        """搜索所有图片的生成器
+
+        Args:
+            query: 关键词
+            max_images: 最大图片数量
+            per_page: 每页数量
+
+        Returns:
+            Generator[Image, None, None]: 图片生成器
+        """
         page = 1
         total_yielded = 0
 
@@ -92,7 +110,14 @@ class ImageDownloader:
         os.makedirs(os.path.join(self.save_dir, "images_metadata"), exist_ok=True)
 
     def download_image(self, image: Image) -> bool:
-        """下载单张图片和保存元数据"""
+        """下载单张图片和保存元数据
+
+        Args:
+            image: 图片
+
+        Returns:
+            bool: 是否下载成功
+        """
         image_id = str(image.id)
         image_url = image.large_image_url
 

@@ -67,21 +67,44 @@ class PexelsBaseAPI:
         retry_times: int = 3,
         retry_delay: int = 1,
     ):
+        """初始化Pexels API基类, 视频和图片下载器都继承自该类
+
+        Args:
+            api_key_pool: API密钥池
+            proxy_provider: 代理提供者
+            retry_times: 重试次数
+            retry_delay: 重试延迟
+        """
         self.api_key_pool = api_key_pool
         self.proxy_provider = proxy_provider
         self.retry_times = retry_times
         self.retry_delay = retry_delay
 
     def _get_headers(self) -> Dict[str, str]:
+        """获取请求头， 这里返回Authorization头
+
+        Returns:
+            Dict[str, str]: 请求头
+        """
         return {"Authorization": self.api_key_pool.get_key()}
 
     def _get_proxies(self) -> Optional[Dict[str, str]]:
+        """获取代理配置
+
+        Returns:
+            Dict[str, str] | None: 代理配置, 如果没有代理则返回None
+        """
         if not self.proxy_provider:
             return None
         proxy_config = self.proxy_provider.get_proxy()
         return proxy_config.to_proxy_dict()
 
     def _update_rate_limit(self, response):
+        """更新API密钥池的剩余请求次数
+
+        Args:
+            response: 响应
+        """
         current_key = response.request.headers["Authorization"]
         remaining = int(response.headers.get("X-Ratelimit-Remaining", 0))
         self.api_key_pool.update_remaining_requests(current_key, remaining)

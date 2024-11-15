@@ -20,7 +20,16 @@ class PixabayVideoAPI(PixabayBaseAPI):
     def search_resources(
         self, query: str, per_page: int, page: int
     ) -> VideoSearchResponse:
-        """搜索视频"""
+        """搜索视频
+
+        Args:
+            query: 关键词
+            per_page: 每页数量
+            page: 页码
+
+        Returns:
+            VideoSearchResponse: 视频搜索响应
+        """
         params = {
             "q": query,
             "per_page": per_page,
@@ -53,7 +62,16 @@ class PixabayVideoAPI(PixabayBaseAPI):
         max_videos: Optional[int] = None,
         per_page: int = 80,
     ) -> Generator[Video, None, None]:
-        """搜索所有视频的生成器"""
+        """搜索所有视频的生成器
+
+        Args:
+            query: 关键词
+            max_videos: 最大视频数量
+            per_page: 每页数量
+
+        Returns:
+            Generator[Video, None, None]: 视频生成器
+        """
         page = 1
         total_yielded = 0
 
@@ -92,7 +110,15 @@ class VideoDownloader:
         os.makedirs(os.path.join(self.save_dir, "videos_metadata"), exist_ok=True)
 
     def download_video(self, video: Video, quality: str = "large") -> bool:
-        """下载单个视频和保存元数据"""
+        """下载单个视频和保存元数据
+
+        Args:
+            video: 视频
+            quality: 视频质量
+
+        Returns:
+            bool: 是否下载成功
+        """
         video_id = str(video.id)
         video_file = video.get_video_by_quality(quality)
         if not video_file:

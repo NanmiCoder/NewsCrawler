@@ -18,7 +18,16 @@ class PexelsVideoAPI(PexelsBaseAPI):
     def search_resources(
         self, query: str, per_page: int, page: int
     ) -> VideoSearchResponse:
-        """搜索视频"""
+        """搜索视频
+
+        Args:
+            query: 关键词
+            per_page: 每页数量
+            page: 页码
+
+        Returns:
+            VideoSearchResponse: 视频搜索响应
+        """
         endpoint = f"{self.BASE_URL}/videos/search"
         params = {"query": query, "per_page": per_page, "page": page}
 
