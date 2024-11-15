@@ -1,10 +1,12 @@
-import os
 import json
 import logging
-from typing import Optional, Generator
-import requests
+import os
 import time
+from typing import Generator, Optional
+
+import requests
 from common.base import PexelsBaseAPI
+
 from .schemas import Video, VideoSearchResponse
 
 logger = logging.getLogger("PexelsDownloader")

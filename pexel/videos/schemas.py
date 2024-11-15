@@ -1,6 +1,7 @@
 from typing import List, Optional
-from pydantic import BaseModel
+
 from common.schemas import BaseResource, BaseSearchResponse
+from pydantic import BaseModel
 
 
 class VideoFile(BaseModel):

@@ -1,8 +1,9 @@
 import logging
 import random
-from typing import Optional, Dict, List
-from .schemas import DEFAULT_MAX_REQUESTS
+from typing import Dict, List, Optional
+
 from .proxy import ProxyProvider
+from .schemas import DEFAULT_MAX_REQUESTS
 
 logger = logging.getLogger("PexelsDownloader")
 

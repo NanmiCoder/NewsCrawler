@@ -3,9 +3,10 @@
 # date: 2024-11-15
 # description: IP代理提供者， 具体的IP代理上实现等到真正下载图片时IP被封了再来实现
 
-from typing import List, Dict
-from abc import ABC, abstractmethod
 import random
+from abc import ABC, abstractmethod
+from typing import Dict, List
+
 from .schemas import ProxyConfig
 
 

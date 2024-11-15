@@ -3,13 +3,15 @@
 # date: 2024-11-15
 # description: Pexels API图片下载器
 
-import os
 import json
 import logging
-import requests
+import os
 import time
-from typing import Optional, Generator
+from typing import Generator, Optional
+
+import requests
 from common.base import PexelsBaseAPI
+
 from .schemas import Photo, PhotoSearchResponse
 
 logger = logging.getLogger("PexelsDownloader")

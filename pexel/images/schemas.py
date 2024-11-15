@@ -4,8 +4,9 @@
 # description: Pexels API返回的数据模型
 
 from typing import List, Optional
-from pydantic import BaseModel
+
 from common.schemas import BaseResource, BaseSearchResponse
+from pydantic import BaseModel
 
 
 class PhotoSource(BaseModel):
