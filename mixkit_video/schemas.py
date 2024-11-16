@@ -14,7 +14,7 @@ class MixkitVideo(BaseModel):
 
     id: str
     title: str
-    video_detail_url: str
+    video_detail_url: Optional[str]
     download_360_video_url: str
     download_1080_video_url: str
 

@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
+import time
 
 from downloader import CoverAPI, VideoDownloader
-from logger import init_logger  # 导入统一的logger配置
+from logger import init_logger
 from schemas import MAX_RESOURCES_PER_KEYWORD
 
 logger = logging.getLogger("CoverVideoDownloader")
@@ -13,6 +16,7 @@ def download_videos_with_keywords(
     downloader: VideoDownloader,
     keywords: list,
     max_videos_per_keyword: int = MAX_RESOURCES_PER_KEYWORD,
+    max_workers: int = 5,
 ):
     """批量下载多个关键词的视频。
 
@@ -21,22 +25,38 @@ def download_videos_with_keywords(
         downloader: VideoDownloader实例。
         keywords: 关键词列表。
         max_videos_per_keyword: 每个关键词最多下载的视频数量。
+        max_workers: 线程池中的最大线程数。
     """
     for keyword in keywords:
-        logger.info(f"开始下载关键词 '{keyword}' 的视频...")
+        logger.info(f"开始下载关键词 '{keyword}' 的视频, 当前线程池大小: {max_workers}")
         try:
+            start_time = time.time()
             downloaded_count = 0
-            for video in cover.search_all_videos(
-                keyword, max_videos=max_videos_per_keyword
-            ):
-                if downloader.download_video(video):
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = []
+                for video in cover.search_all_videos(
+                    keyword, max_videos=max_videos_per_keyword
+                ):
+                    if downloaded_count >= max_videos_per_keyword:
+                        break
+                    future = executor.submit(downloader.download_video, video)
+                    futures.append((future, video.id))
                     downloaded_count += 1
-                    logger.info(
-                        f"成功下载视频: {video.id} ({downloaded_count}/{max_videos_per_keyword})"
-                    )
+                successful_downloads = 0
+                for future, video_id in futures:
+                    try:
+                        if future.result():
+                            successful_downloads += 1
+                            logger.info(
+                                f"成功下载视频: {video_id} ({successful_downloads}/{len(futures)})"
+                            )
+                        else:
+                            logger.warning(f"视频下载失败: {video_id}")
+                    except Exception as e:
+                        logger.error(f"下载视频 {video_id} 时发生错误: {str(e)}")
 
             logger.info(
-                f"完成关键词 '{keyword}' 的下载, 共下载 {downloaded_count} 个视频"
+                f"完成关键词 '{keyword}' 的下载, 共下载 {successful_downloads} 个视频， 耗时 {time.time() - start_time:.2f} 秒"
             )
 
         except Exception as e:
@@ -57,6 +77,7 @@ if __name__ == "__main__":
             downloader=downloader,
             keywords=keywords,
             max_videos_per_keyword=MAX_RESOURCES_PER_KEYWORD,
+            max_workers=os.cpu_count() + 4,
         )
         logger.info("所有下载任务完成!")
     except Exception as e:

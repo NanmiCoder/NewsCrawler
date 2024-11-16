@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+import os
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 from common.base import APIKeyPool
 from common.proxy import SimpleProxyProvider
@@ -25,6 +28,7 @@ def download_images_with_keywords(
     downloader: ImageDownloader,
     keywords: list,
     max_images_per_keyword: int = MAX_RESOURCES_PER_KEYWORD,
+    max_workers: int = 5,
 ):
     """批量下载多个关键词的图片。
 
@@ -33,22 +37,39 @@ def download_images_with_keywords(
         downloader: ImageDownloader实例。
         keywords: 关键词列表。
         max_images_per_keyword: 每个关键词最多下载的图片数量。
+        max_workers: 线程池中的最大线程数。
     """
     for keyword in keywords:
-        logger.info(f"开始下载关键词 '{keyword}' 的图片...")
+        logger.info(f"开始下载关键词 '{keyword}' 的图片, 当前线程池大小: {max_workers}")
         try:
+            start_time = time.time()
             downloaded_count = 0
-            for photo in pexels.search_all_photos(
-                keyword, max_photos=max_images_per_keyword
-            ):
-                if downloader.download_image(photo):
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = []
+                for photo in pexels.search_all_photos(
+                    keyword, max_photos=max_images_per_keyword
+                ):
+                    if downloaded_count >= max_images_per_keyword:
+                        break
+                    future = executor.submit(downloader.download_image, photo)
+                    futures.append((future, photo.id))
                     downloaded_count += 1
-                    logger.info(
-                        f"成功下载图片: {photo.id} ({downloaded_count}/{max_images_per_keyword})"
-                    )
+
+                successful_downloads = 0
+                for future, photo_id in futures:
+                    try:
+                        if future.result():
+                            successful_downloads += 1
+                            logger.info(
+                                f"成功下载图片: {photo_id} ({successful_downloads}/{len(futures)})"
+                            )
+                        else:
+                            logger.warning(f"图片下载失败: {photo_id}")
+                    except Exception as e:
+                        logger.error(f"下载图片 {photo_id} 时发生错误: {str(e)}")
 
             logger.info(
-                f"完成关键词 '{keyword}' 的下载, 共下载 {downloaded_count} 张图片"
+                f"完成关键词 '{keyword}' 的下载, 共下载 {successful_downloads} 张图片，耗时 {time.time() - start_time:.2f} 秒"
             )
 
         except Exception as e:
@@ -72,6 +93,7 @@ if __name__ == "__main__":
             downloader=downloader,
             keywords=keywords,
             max_images_per_keyword=MAX_RESOURCES_PER_KEYWORD,
+            max_workers=os.cpu_count() + 4,
         )
         logger.info("所有下载任务完成!")
     except Exception as e:

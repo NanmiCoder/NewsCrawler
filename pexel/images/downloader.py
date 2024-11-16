@@ -152,8 +152,6 @@ class ImageDownloader:
 
             with open(metadata_path, "w", encoding="utf-8") as f:
                 json.dump(photo.model_dump(), f, ensure_ascii=False, indent=2)
-
-            logger.info(f"图片 {photo_id} 下载成功")
             return True
 
         except Exception as e:

@@ -141,7 +141,6 @@ class VideoDownloader:
             with open(metadata_path, "w", encoding="utf-8") as f:
                 json.dump(video.model_dump(), f, ensure_ascii=False, indent=2)
 
-            logger.info(f"视频 {video_id} 下载成功")
             return True
 
         except Exception as e:

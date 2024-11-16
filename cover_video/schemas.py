@@ -50,25 +50,25 @@ class Video(BaseModel):
 
     id: str
     title: str
-    description: str
+    description: Optional[str]
     base_filename: str = Field(alias="baseFilename")
-    poster: str
-    thumbnail: str
-    state: str
+    poster: Optional[str]
+    thumbnail: Optional[str]
+    state: Optional[str]
     is_vertical: bool = Field(alias="isVertical")
     tags: List[str]
-    downloads: int
-    views: int
-    likes: int
+    downloads: Optional[int]
+    views: Optional[int]
+    likes: Optional[int]
     aspect_ratio: str = Field(alias="aspectRatio")
-    duration: str
-    max_height: int = Field(alias="maxHeight")
-    max_width: int = Field(alias="maxWidth")
+    duration: Optional[str]
+    max_height: Optional[int] = Field(alias="maxHeight")
+    max_width: Optional[int] = Field(alias="maxWidth")
     video_id: str = Field(alias="videoId")
     urls: VideoUrls
     is_premium: bool = Field(alias="isPremium")
     keywords: List[Keyword]
-    fps: int
+    fps: Optional[int]
     is_ai_generated: bool = Field(alias="isAiGenerated")
 
 

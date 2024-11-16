@@ -127,9 +127,11 @@ class MixkitAPI:
                     f"当前页视频数: {len(search_response.hits)}"
                 )
                 return search_response
-            except requests.exceptions.RequestException as e:
+            except Exception as e:
                 if attempt == self.retry_times - 1:
-                    logger.error(f"搜索失败: {str(e)}")
+                    logger.error(
+                        f"搜索失败: {str(e)}， 关键词: {query}， 响应: {response.text}"
+                    )
                     raise
                 logger.warning(f"搜索失败，正在进行第{attempt + 1}次重试")
                 time.sleep(self.retry_delay)
@@ -216,8 +218,6 @@ class VideoDownloader:
 
             with open(metadata_path, "w", encoding="utf-8") as f:
                 json.dump(video.model_dump(), f, ensure_ascii=False, indent=2)
-
-            logger.info(f"视频 {video_id} 下载成功")
             return True
 
         except Exception as e:
