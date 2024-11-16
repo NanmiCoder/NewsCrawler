@@ -109,7 +109,7 @@ class ImageDownloader:
         os.makedirs(os.path.join(self.save_dir, "images"), exist_ok=True)
         os.makedirs(os.path.join(self.save_dir, "images_metadata"), exist_ok=True)
 
-    def download_image(self, image: Image) -> bool:
+    def download_image(self, keyword: str, image: Image) -> bool:
         """下载单张图片和保存元数据
 
         Args:
@@ -121,10 +121,14 @@ class ImageDownloader:
         image_id = str(image.id)
         image_url = image.large_image_url
 
-        image_path = os.path.join(self.save_dir, "images", f"{image_id}.jpg")
+        image_path = os.path.join(self.save_dir, "images", keyword, f"{image_id}.jpg")
         metadata_path = os.path.join(
-            self.save_dir, "images_metadata", f"{image_id}.json"
+            self.save_dir, "images_metadata", keyword, f"{image_id}.json"
         )
+
+        # for image keyword
+        os.makedirs(os.path.dirname(image_path), exist_ok=True)
+        os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
 
         try:
             logger.info(f"开始下载图片: {image_id}")
@@ -135,7 +139,9 @@ class ImageDownloader:
                 f.write(response.content)
 
             with open(metadata_path, "w", encoding="utf-8") as f:
-                json.dump(image.model_dump(), f, ensure_ascii=False, indent=2)
+                meta_data = image.model_dump()
+                meta_data["search_source_keyword"] = keyword
+                json.dump(meta_data, f, ensure_ascii=False, indent=2)
 
             logger.info(f"图片 {image_id} 下载成功")
             return True

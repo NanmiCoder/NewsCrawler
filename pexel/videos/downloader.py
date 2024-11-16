@@ -110,10 +110,11 @@ class VideoDownloader:
         os.makedirs(os.path.join(self.save_dir, "videos"), exist_ok=True)
         os.makedirs(os.path.join(self.save_dir, "videos_metadata"), exist_ok=True)
 
-    def download_video(self, video: Video, quality: str = "hd") -> bool:
+    def download_video(self, keyword: str, video: Video, quality: str = "hd") -> bool:
         """下载单个视频和保存元数据
 
         Args:
+            keyword: 关键词
             video: Video模型实例
             quality: 视频质量，可选值：sd, hd, hls等
 
@@ -133,8 +134,12 @@ class VideoDownloader:
             self.save_dir, "videos_metadata", f"{video_id}.json"
         )
 
+        # for video keyword
+        os.makedirs(os.path.dirname(video_path), exist_ok=True)
+        os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
+
         try:
-            logger.info(f"开始下载视频: {video_id}")
+            logger.info(f"开始下载视频: {video_id}，关键词: {keyword}")
             response = requests.get(video_file.link)
             response.raise_for_status()
 
@@ -142,7 +147,9 @@ class VideoDownloader:
                 f.write(response.content)
 
             with open(metadata_path, "w", encoding="utf-8") as f:
-                json.dump(video.model_dump(), f, ensure_ascii=False, indent=2)
+                meta_data = video.model_dump()
+                meta_data["search_source_keyword"] = keyword
+                json.dump(meta_data, f, ensure_ascii=False, indent=2)
 
             return True
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 import logging
 import os
 import time
@@ -51,7 +52,7 @@ def download_images_with_keywords(
                 ):
                     if downloaded_count >= max_images_per_keyword:
                         break
-                    future = executor.submit(downloader.download_image, image)
+                    future = executor.submit(downloader.download_image, keyword, image)
                     futures.append((future, image.id))
                     downloaded_count += 1
 
@@ -78,8 +79,10 @@ def download_images_with_keywords(
 
 if __name__ == "__main__":
     init_logger()
-    from cover_video.video_tag import video_tag_list
-    # keywords = ["cloud"]
+
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from video_config.video_tag import video_tag_list
+
     keywords = video_tag_list
     api_keys = ["47097682-8a286a407b814e98b6c7d3f56"]
     pixabay = PixabayAPI(

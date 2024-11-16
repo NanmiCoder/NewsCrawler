@@ -149,10 +149,11 @@ class VideoDownloader:
 
         return {"User-Agent": random.choice(UA_LIST)}
 
-    def download_video(self, video: Video, quality: str = "fhd") -> bool:
+    def download_video(self, keyword: str, video: Video, quality: str = "fhd") -> bool:
         """下载单个视频和保存元数据
 
         Args:
+            keyword: 关键词
             video: 视频
             quality: 视频质量
 
@@ -167,13 +168,17 @@ class VideoDownloader:
             logger.error(f"视频 {video_id} 没有下载链接")
             return False
 
-        video_path = os.path.join(self.save_dir, "videos", f"{video_id}.mp4")
+        video_path = os.path.join(self.save_dir, "videos", keyword, f"{video_id}.mp4")
         metadata_path = os.path.join(
-            self.save_dir, "videos_metadata", f"{video_id}.json"
+            self.save_dir, "videos_metadata", keyword, f"{video_id}.json"
         )
 
+        # for video keyword
+        os.makedirs(os.path.dirname(video_path), exist_ok=True)
+        os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
+
         try:
-            logger.info(f"开始下载视频: {video_id}")
+            logger.info(f"开始下载视频: {video_id}，关键词: {keyword}")
             response = requests.get(video_url, headers=self.get_headers)
             response.raise_for_status()
 
@@ -181,7 +186,9 @@ class VideoDownloader:
                 f.write(response.content)
 
             with open(metadata_path, "w", encoding="utf-8") as f:
-                json.dump(video.model_dump(), f, ensure_ascii=False, indent=2)
+                meta_data = video.model_dump()
+                meta_data["search_source_keyword"] = keyword
+                json.dump(meta_data, f, ensure_ascii=False, indent=2)
             return True
 
         except Exception as e:

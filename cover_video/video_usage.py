@@ -39,7 +39,7 @@ def download_videos_with_keywords(
                 ):
                     if downloaded_count >= max_videos_per_keyword:
                         break
-                    future = executor.submit(downloader.download_video, video)
+                    future = executor.submit(downloader.download_video, keyword, video)
                     futures.append((future, video.id))
                     downloaded_count += 1
                 successful_downloads = 0

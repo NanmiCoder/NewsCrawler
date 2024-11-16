@@ -125,10 +125,11 @@ class ImageDownloader:
         os.makedirs(os.path.join(self.save_dir, "images"), exist_ok=True)
         os.makedirs(os.path.join(self.save_dir, "images_metadata"), exist_ok=True)
 
-    def download_image(self, photo: Photo) -> bool:
+    def download_image(self, keyword: str, photo: Photo) -> bool:
         """下载单张图片和保存元数据。
 
         Args:
+            keyword: 关键词
             photo: Photo模型实例。
 
         Returns:
@@ -137,13 +138,17 @@ class ImageDownloader:
         photo_id = str(photo.id)
         image_url = str(photo.src.original)
 
-        image_path = os.path.join(self.save_dir, "images", f"{photo_id}.jpg")
+        image_path = os.path.join(self.save_dir, "images", keyword, f"{photo_id}.jpg")
         metadata_path = os.path.join(
-            self.save_dir, "images_metadata", f"{photo_id}.json"
+            self.save_dir, "images_metadata", keyword, f"{photo_id}.json"
         )
 
+        # for image keyword
+        os.makedirs(os.path.dirname(image_path), exist_ok=True)
+        os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
+
         try:
-            logger.info(f"开始下载图片: {photo_id}")
+            logger.info(f"开始下载图片: {photo_id}，关键词: {keyword}")
             response = requests.get(image_url)
             response.raise_for_status()
 
@@ -151,7 +156,9 @@ class ImageDownloader:
                 f.write(response.content)
 
             with open(metadata_path, "w", encoding="utf-8") as f:
-                json.dump(photo.model_dump(), f, ensure_ascii=False, indent=2)
+                meta_data = photo.model_dump()
+                meta_data["search_source_keyword"] = keyword
+                json.dump(meta_data, f, ensure_ascii=False, indent=2)
             return True
 
         except Exception as e:

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 import logging
 import os
 import time
@@ -50,7 +51,7 @@ def download_videos_with_keywords(
                 ):
                     if downloaded_count >= max_videos_per_keyword:
                         break
-                    future = executor.submit(downloader.download_video, video)
+                    future = executor.submit(downloader.download_video, keyword, video)
                     futures.append((future, video.id))
                     downloaded_count += 1
 
@@ -77,9 +78,15 @@ def download_videos_with_keywords(
 
 if __name__ == "__main__":
     init_logger()
-    from cover_video.video_tag import video_tag_list
+
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from video_config.video_tag import video_tag_list
+
     keywords = video_tag_list
-    api_keys = ["iN21cr1BrTEQAtRhn9TRArfEGmBUgrqrUTecb5FltSO9xGVEAw52SGze", "3WoGqOUU6CNLiPv7IoCVrEXFvnG7d1Khh8sGe11bg7BHWntBeCkG5hnz"]
+    api_keys = [
+        "iN21cr1BrTEQAtRhn9TRArfEGmBUgrqrUTecb5FltSO9xGVEAw52SGze",
+        "3WoGqOUU6CNLiPv7IoCVrEXFvnG7d1Khh8sGe11bg7BHWntBeCkG5hnz",
+    ]
     pexels = PexelsVideoAPI(
         api_key_pool=APIKeyPool(api_keys),
         proxy_provider=None,
