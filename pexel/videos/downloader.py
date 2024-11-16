@@ -129,7 +129,7 @@ class VideoDownloader:
             video.video_files[0],  # 如果没有指定质量，使用第一个文件
         )
 
-        video_path = os.path.join(self.save_dir, "videos", f"{video_id}.mp4")
+        video_path = os.path.join(self.save_dir, "videos", keyword, f"{video_id}.mp4")
         metadata_path = os.path.join(
             self.save_dir, "videos_metadata", f"{video_id}.json"
         )
