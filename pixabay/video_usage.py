@@ -78,7 +78,9 @@ def download_videos_with_keywords(
 
 if __name__ == "__main__":
     init_logger()
-    keywords = ["cloud"]
+    from cover_video.video_tag import video_tag_list
+    # keywords = ["cloud"]
+    keywords = video_tag_list
     api_keys = ["47097682-8a286a407b814e98b6c7d3f56"]
     pixabay = PixabayVideoAPI(
         api_key_pool=APIKeyPool(api_keys),
