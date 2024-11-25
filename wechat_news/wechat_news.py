@@ -194,7 +194,7 @@ class WechatContentParser:
             node (Selector): 节点
         """
         # 对于section等容器标签，处理其子元素
-        if node.root.tag in ["section", "div", "article"]:
+        if node.root.tag in ["section", "div", "article", "blockquote"]:
             # 如果section、div、article中有直接文本，则直接添加
             if node.xpath("./text()").get("").strip():
                 self._contents.append(
@@ -264,6 +264,17 @@ class WechatContentParser:
 
             # 处理span标签
         if node.root.tag in ["span", "strong"]:
+            if (
+                node.xpath(".//img")
+                or node.xpath(".//video")
+                or node.xpath(".//iframe")
+            ):
+                maybe_exist_nodes = node.xpath(".//img | .//video | .//iframe")
+                for maybe_exist_node in maybe_exist_nodes:
+                    media_content = self._process_media(maybe_exist_node)
+                    if media_content:
+                        self._contents.append(media_content)
+
             text = self._process_text_block(node)
             if text:
                 self._contents.append(ContentItem(type=ContentType.TEXT, content=text))
@@ -484,14 +495,17 @@ if __name__ == "__main__":
     article_url4 = "https://mp.weixin.qq.com/s/Ig44D56c11qOcZxlRWdo1w"
     article_url5 = "https://mp.weixin.qq.com/s/ZzWDIt3WZGMmxoC4M1Fo6w"
     article_url6 = "https://mp.weixin.qq.com/s/1M_H0Q83z73LumchZ03zwA"
-
+    article_url7 = "https://mp.weixin.qq.com/s/q2ibCgE9Pr3jeRTtTNLOjQ"
+    article_url8 = "https://mp.weixin.qq.com/s/GFcXLkqMvyuTpNWhrSPq6g"
     for article_url in [
-        article_url1,
-        article_url2,
-        article_url3,
-        article_url4,
-        article_url5,
-        article_url6,
+        # article_url1,
+        # article_url2,
+        # article_url3,
+        # article_url4,
+        # article_url5,
+        # article_url6,
+        # article_url7,
+        article_url8,
     ]:
         crawler = WeChatNewsCrawler(article_url, save_path="data/")
         crawler.run()
