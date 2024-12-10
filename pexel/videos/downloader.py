@@ -109,7 +109,7 @@ class VideoDownloader:
         logger.info(f"初始化视频下载器，保存目录: {save_dir}")
 
     def _create_dirs(self):
-        os.makedirs(os.path.join(self.save_dir, "video"), exist_ok=True)
+        os.makedirs(os.path.join(self.save_dir, "videos"), exist_ok=True)
 
     def _get_formatted_filename(self, keyword: str) -> str:
         """格式化文件名，将空格替换为横线"""
@@ -147,7 +147,7 @@ class VideoDownloader:
 
                 video_path = os.path.join(
                     self.save_dir,
-                    "video",
+                    "videos",
                     f"{formatted_keyword}_{video_id}_{width}_{height}.mp4",
                 )
 
