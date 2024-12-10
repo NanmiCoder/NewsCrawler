@@ -5,4 +5,5 @@ pydantic==2.9.2
 requests==2.32.3
 tenacity==8.2.2
 DrissionPage==4.1.0.9
+pytz==2024.2
 

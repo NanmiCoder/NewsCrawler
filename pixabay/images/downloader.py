@@ -3,6 +3,8 @@ import logging
 import os
 import time
 from typing import Generator, Optional
+from datetime import datetime
+import pytz
 
 import requests
 from common.base import PixabayBaseAPI
@@ -107,44 +109,90 @@ class ImageDownloader:
 
     def _create_dirs(self):
         os.makedirs(os.path.join(self.save_dir, "images"), exist_ok=True)
-        os.makedirs(os.path.join(self.save_dir, "images_metadata"), exist_ok=True)
+
+    def _get_formatted_filename(self, text: str) -> str:
+        """格式化文件名，将空格替换为横线"""
+        return text.replace(" ", "-")
 
     def download_image(self, keyword: str, image: Image) -> bool:
-        """下载单张图片和保存元数据
-
-        Args:
-            image: 图片
-
-        Returns:
-            bool: 是否下载成功
-        """
+        """下载所有质量的图片和保存元数据"""
         image_id = str(image.id)
-        image_url = image.large_image_url
+        formatted_keyword = self._get_formatted_filename(keyword)
+        formatted_tags = self._get_formatted_filename(image.tags)
 
-        image_path = os.path.join(self.save_dir, "images", keyword, f"{image_id}.jpg")
+        # 添加创建时间
+        cst = pytz.timezone("Asia/Shanghai")
+        create_at = datetime.now(cst).strftime("%Y-%m-%d-%H:%M:%S")
+
+        # 保存元数据
         metadata_path = os.path.join(
-            self.save_dir, "images_metadata", keyword, f"{image_id}.json"
+            self.save_dir,
+            "images",
+            f"{formatted_keyword}_{image_id}_{formatted_tags}.json",
         )
 
-        # for image keyword
-        os.makedirs(os.path.dirname(image_path), exist_ok=True)
-        os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
-
         try:
-            logger.info(f"开始下载图片: {image_id}")
-            response = requests.get(image_url)
-            response.raise_for_status()
-
-            with open(image_path, "wb") as f:
-                f.write(response.content)
-
+            # 保存元数据
             with open(metadata_path, "w", encoding="utf-8") as f:
                 meta_data = image.model_dump()
                 meta_data["search_source_keyword"] = keyword
+                meta_data["create_at"] = create_at
                 json.dump(meta_data, f, ensure_ascii=False, indent=2)
 
-            logger.info(f"图片 {image_id} 下载成功")
-            return True
+            # 下载所有质量的图片
+            success_count = 0
+
+            # webformatURL: 640px 的图片
+            # largeImageURL: 1280px 的图片
+            # fullHDURL: 1920px 的图片（如果有）
+            # imageURL: 原始分辨率（如果有）
+            quality_urls = [
+                (
+                    image.preview_url,
+                    f"{image.preview_width}x{image.preview_height}",
+                ),  # 150px 预览图
+                (
+                    image.webformat_url,
+                    f"{image.webformat_width}x{image.webformat_height}",
+                ),  # 640px
+                (
+                    image.large_image_url,
+                    f"{image.image_width}x{image.image_height}_large",
+                ),  # 1280px
+            ]
+
+            # 添加可选的更高质量版本
+            if image.full_hd_url:
+                quality_urls.append((image.full_hd_url, "1920x1080"))  # fullHD 1920px
+            if image.image_url:
+                quality_urls.append(
+                    (
+                        image.image_url,
+                        f"{image.image_width}x{image.image_height}",
+                    )  # 原始分辨率
+                )
+
+            for url, resolution in quality_urls:
+                if not url:
+                    continue
+
+                image_path = os.path.join(
+                    self.save_dir,
+                    "images",
+                    f"{formatted_keyword}_{image_id}_{formatted_tags}_{resolution}.jpg",
+                )
+
+                logger.info(
+                    f"开始下载图片: {image_id} ({resolution})，关键词: {keyword}"
+                )
+                response = requests.get(url)
+                response.raise_for_status()
+
+                with open(image_path, "wb") as f:
+                    f.write(response.content)
+                success_count += 1
+
+            return success_count > 0
 
         except Exception as e:
             logger.error(f"下载图片 {image_id} 失败: {str(e)}")

@@ -3,6 +3,8 @@ import logging
 import os
 import time
 from typing import Generator, Optional
+from datetime import datetime
+import pytz
 
 import requests
 from common.base import PexelsBaseAPI
@@ -107,51 +109,59 @@ class VideoDownloader:
         logger.info(f"初始化视频下载器，保存目录: {save_dir}")
 
     def _create_dirs(self):
-        os.makedirs(os.path.join(self.save_dir, "videos"), exist_ok=True)
-        os.makedirs(os.path.join(self.save_dir, "videos_metadata"), exist_ok=True)
+        os.makedirs(os.path.join(self.save_dir, "video"), exist_ok=True)
 
-    def download_video(self, keyword: str, video: Video, quality: str = "hd") -> bool:
-        """下载单个视频和保存元数据
+    def _get_formatted_filename(self, keyword: str) -> str:
+        """格式化文件名，将空格替换为横线"""
+        return keyword.replace(" ", "-")
 
-        Args:
-            keyword: 关键词
-            video: Video模型实例
-            quality: 视频质量，可选值：sd, hd, hls等
-
-        Returns:
-            bool: 下载是否成功
-        """
+    def download_video(self, keyword: str, video: Video) -> bool:
+        """下载所有质量的视频和保存元数据"""
         video_id = str(video.id)
+        formatted_keyword = self._get_formatted_filename(keyword)
 
-        # 选择指定质量的视频文件
-        video_file = next(
-            (f for f in video.video_files if f.quality == quality),
-            video.video_files[0],  # 如果没有指定质量，使用第一个文件
-        )
+        # 添加创建时间
+        cst = pytz.timezone("Asia/Shanghai")
+        create_at = datetime.now(cst).strftime("%Y-%m-%d-%H:%M:%S")
 
-        video_path = os.path.join(self.save_dir, "videos", keyword, f"{video_id}.mp4")
+        # 保存元数据
         metadata_path = os.path.join(
-            self.save_dir, "videos_metadata", f"{video_id}.json"
+            self.save_dir, "videos", f"{formatted_keyword}_{video_id}.json"
         )
-
-        # for video keyword
-        os.makedirs(os.path.dirname(video_path), exist_ok=True)
-        os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
 
         try:
-            logger.info(f"开始下载视频: {video_id}，关键词: {keyword}")
-            response = requests.get(video_file.link)
-            response.raise_for_status()
-
-            with open(video_path, "wb") as f:
-                f.write(response.content)
-
+            # 保存元数据
             with open(metadata_path, "w", encoding="utf-8") as f:
                 meta_data = video.model_dump()
                 meta_data["search_source_keyword"] = keyword
+                meta_data["create_at"] = create_at
                 json.dump(meta_data, f, ensure_ascii=False, indent=2)
 
-            return True
+            # 下载所有质量的视频
+            success_count = 0
+            for video_file in video.video_files:
+                width = video_file.width
+                height = video_file.height
+                if not width or not height:
+                    continue
+
+                video_path = os.path.join(
+                    self.save_dir,
+                    "video",
+                    f"{formatted_keyword}_{video_id}_{width}_{height}.mp4",
+                )
+
+                logger.info(
+                    f"开始下载视频: {video_id} ({width}x{height})，关键词: {keyword}"
+                )
+                response = requests.get(video_file.link)
+                response.raise_for_status()
+
+                with open(video_path, "wb") as f:
+                    f.write(response.content)
+                success_count += 1
+
+            return success_count > 0
 
         except Exception as e:
             logger.error(f"下载视频 {video_id} 失败: {str(e)}")
