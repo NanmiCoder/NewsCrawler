@@ -8,6 +8,8 @@ import logging
 import os
 import time
 from typing import Generator, Optional
+from datetime import datetime
+import pytz
 
 import requests
 from common.base import PexelsBaseAPI
@@ -123,43 +125,55 @@ class ImageDownloader:
     def _create_dirs(self):
         """创建保存图片和元数据的目录。"""
         os.makedirs(os.path.join(self.save_dir, "images"), exist_ok=True)
-        os.makedirs(os.path.join(self.save_dir, "images_metadata"), exist_ok=True)
+
+    def _get_formatted_filename(self, text: str) -> str:
+        """格式化文件名，将空格替换为横线"""
+        return text.replace(" ", "-")
 
     def download_image(self, keyword: str, photo: Photo) -> bool:
-        """下载单张图片和保存元数据。
-
-        Args:
-            keyword: 关键词
-            photo: Photo模型实例。
-
-        Returns:
-            bool: 下载是否成功。
-        """
+        """下载所有质量的图片和保存元数据"""
         photo_id = str(photo.id)
-        image_url = str(photo.src.original)
+        formatted_keyword = self._get_formatted_filename(keyword)
+        formatted_alt = self._get_formatted_filename(photo.alt)
 
-        image_path = os.path.join(self.save_dir, "images", keyword, f"{photo_id}.jpg")
+        # 添加创建时间
+        cst = pytz.timezone("Asia/Shanghai")
+        create_at = datetime.now(cst).strftime("%Y-%m-%d-%H:%M:%S")
+
+        # 保存元数据
         metadata_path = os.path.join(
-            self.save_dir, "images_metadata", keyword, f"{photo_id}.json"
+            self.save_dir,
+            "images",
+            f"{formatted_keyword}_{photo_id}_{formatted_alt}.json",
         )
 
-        # for image keyword
-        os.makedirs(os.path.dirname(image_path), exist_ok=True)
-        os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
-
         try:
-            logger.info(f"开始下载图片: {photo_id}，关键词: {keyword}")
-            response = requests.get(image_url)
-            response.raise_for_status()
-
-            with open(image_path, "wb") as f:
-                f.write(response.content)
-
+            # 保存元数据
             with open(metadata_path, "w", encoding="utf-8") as f:
                 meta_data = photo.model_dump()
                 meta_data["search_source_keyword"] = keyword
+                meta_data["create_at"] = create_at
                 json.dump(meta_data, f, ensure_ascii=False, indent=2)
-            return True
+
+            # 下载所有质量的图片
+            success_count = 0
+            src_dict = photo.src.model_dump()
+            for quality, url in src_dict.items():
+                image_path = os.path.join(
+                    self.save_dir,
+                    "images",
+                    f"{formatted_keyword}_{photo_id}_{formatted_alt}_{quality}.jpg",
+                )
+
+                logger.info(f"开始下载图片: {photo_id} ({quality})，关键词: {keyword}")
+                response = requests.get(url)
+                response.raise_for_status()
+
+                with open(image_path, "wb") as f:
+                    f.write(response.content)
+                success_count += 1
+
+            return success_count > 0
 
         except Exception as e:
             logger.error(f"下载图片 {photo_id} 失败: {str(e)}")
