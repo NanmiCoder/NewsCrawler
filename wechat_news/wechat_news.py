@@ -396,10 +396,12 @@ class WechatContentParser:
 
         if ssr_data_dict:
             try:
-                # 添加描述文本
+                # 有的xhs风格的公众号页面，没有desc，只有title，要兼容一下。
                 desc = ssr_data_dict.get("desc")
-                if desc:
-                    desc_list = desc.split("\n")
+                title = ssr_data_dict.get("title")
+                final_desc = desc or title
+                if final_desc:
+                    desc_list = final_desc.split("\n")
                     for desc_item in desc_list:
                         if not desc_item:
                             continue
@@ -626,6 +628,7 @@ if __name__ == "__main__":
 
     # 小红书风格的新公众号页面（页面结构完全不一样，使用的是vue的ssr渲染的page，需要单独解析）
     article_url9 = "https://mp.weixin.qq.com/s/RUHJpS9w3RhuhEm94z-1Kw"
+    article_url10 = "https://mp.weixin.qq.com/s/deS-7QqTWyat-l5Ex39ZDA"
     for article_url in [
         # article_url1,
         # article_url2,
