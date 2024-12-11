@@ -12,13 +12,15 @@ from enum import Enum
 from typing import List, Optional
 
 import requests
+import demjson3
 from parsel import Selector
 from pydantic import BaseModel, Field
 from tenacity import RetryError, retry, stop_after_attempt, wait_fixed
 
+
 FIXED_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
 # 微信公众号不带cookie也可以访问，但是不确定是否爬取多了会有影响，这里可以填写自用cookie
-FIXED_COOKIE = ""
+FIXED_COOKIE = "RK=KfsE+4gSss;rewardsn=;ptcz=13cd54e3b6207f8e605c9a70630509394ef82a923e405fcf0c7c562de1b6e986;wxtokenkey=777"
 
 logger = logging.getLogger("WeChatNewsCrawler")
 
@@ -69,6 +71,86 @@ class NewsItem(BaseModel):
     videos: Optional[List[str]] = Field(default=[], title="新闻视频")
 
 
+def _convert_js_obj_to_json(js_obj_str: str) -> str:
+    """将JavaScript对象字符量转换为标准JSON格式
+
+    Args:
+        js_obj_str (str): JavaScript对象字面量字符串
+
+    Returns:
+        str: 标准JSON格式字符串
+    """
+    try:
+        # 首先尝试直接解析JSON
+        json.loads(js_obj_str)
+        return js_obj_str
+    except json.JSONDecodeError:
+        try:
+            # 如果直接解析失败，则使用demjson3进行转换
+            js_obj_str = js_obj_str.replace(" * 1", "")
+            parsed_data = demjson3.decode(js_obj_str)
+            print(parsed_data)
+            return json.dumps(parsed_data, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"Failed to convert JS object to JSON: {str(e)}")
+            # 如果转换失败，返回原始字符串
+            return js_obj_str
+
+
+def _parse_ssr_data(html: str) -> Optional[dict]:
+    """解析SSR数据
+
+    Args:
+        html (str): 页面HTML内容
+
+    Returns:
+        Optional[dict]: 解析后的SSR数据，解析失败返回None
+    """
+    if "window.__QMTPL_SSR_DATA__" not in html:
+        return None
+
+    ssr_data_match = re.search(r"window\.__QMTPL_SSR_DATA__=(.+);</script>", html)
+    if not ssr_data_match:
+        return None
+
+    try:
+        ssr_data_str = _convert_js_obj_to_json(ssr_data_match.group(1).strip())
+        return json.loads(ssr_data_str)
+    except (json.JSONDecodeError, Exception) as e:
+        logger.error(f"Failed to parse SSR data: {str(e)}")
+        return None
+
+
+def _parse_ssr_image_list(html: str) -> List[ContentItem]:
+    """解析SSR渲染的图片列表
+
+    Args:
+        html (str): 页面HTML内容
+
+    Returns:
+        List[ContentItem]: 图片列表
+    """
+    contents: List[ContentItem] = []
+    regex_compile = re.compile(
+        r"window\.picture_page_info_list = (\[[\s\S]*?\])\.slice\(0,\s*20\);", re.DOTALL
+    )
+    picture_list_match = regex_compile.search(html)
+    if not picture_list_match:
+        return []
+    try:
+        js_image_list_str = picture_list_match.group(1)
+        # 直接用正则提取cdn_url
+        cdn_urls = re.findall(r"cdn_url:\s*'([^']+)'", js_image_list_str)
+        for url in cdn_urls:
+            # 替换转义字符
+            url = url.replace("\\x26amp;", "&")
+            contents.append(ContentItem(type=ContentType.IMAGE, content=url))
+        return contents
+    except Exception as e:
+        logger.error(f"Failed to parse SSR image list: {str(e)}")
+        return []
+
+
 class WechatContentParser:
     """
     微信公众号文章正文内容解析器
@@ -86,8 +168,12 @@ class WechatContentParser:
             html_content (str): 公众号文章内容
 
         Returns:
-            List[ContentItem]: 公众号文章内容，每个段落作为独立的ContentItem
+            List[ContentItem]: 公众号章内容，每个段落作为独立的ContentItem
         """
+        # 检查是否是SSR渲染的页面
+        if "window.__QMTPL_SSR_DATA__" in html_content:
+            return self.parse_ssr_content(html_content)
+
         selector = Selector(text=html_content)
 
         content_node = selector.xpath('//div[@id="js_content"]')
@@ -166,7 +252,7 @@ class WechatContentParser:
         return text
 
     def _process_list_item(self, node: Selector) -> Optional[str]:
-        """处理列表项，添加适当的前缀
+        """处列表项，添加适当的前缀
 
         Args:
             node (Selector): 节点
@@ -294,6 +380,39 @@ class WechatContentParser:
                 self._contents.append(ContentItem(type=ContentType.TEXT, content=text))
             return
 
+    def parse_ssr_content(self, html_content: str) -> List[ContentItem]:
+        """解析SSR渲染的页面内容
+
+        Args:
+            html_content (str): 页面HTML内容
+
+        Returns:
+            List[ContentItem]: 解析后的内容列表
+        """
+        # 提取SSR数据
+        contents = []
+        contents.extend(_parse_ssr_image_list(html_content))
+        ssr_data_dict = _parse_ssr_data(html_content)
+
+        if ssr_data_dict:
+            try:
+                # 添加描述文本
+                desc = ssr_data_dict.get("desc")
+                if desc:
+                    desc_list = desc.split("\n")
+                    for desc_item in desc_list:
+                        if not desc_item:
+                            continue
+                        contents.append(
+                            ContentItem(
+                                type=ContentType.TEXT, content=desc_item.strip()
+                            )
+                        )
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse SSR data: {str(e)}")
+
+        return contents
+
 
 class WeChatNewsCrawler:
     def __init__(
@@ -305,7 +424,7 @@ class WeChatNewsCrawler:
         """初始化公众号文章详情爬虫
 
         Args:
-            new_url (str): 公众号文章详情页url
+            new_url (str): 公众号章详情页url
             save_path (str, optional): 保存路径. Defaults to "".
             headers (RequestHeaders, optional): 请求头. Defaults to RequestHeaders().
         """
@@ -343,14 +462,14 @@ class WeChatNewsCrawler:
         """获取公众号文章详情页保存的json文件路径
 
         Returns:
-            str: 公众号文章详情页保存的json文件路径
+            str: 众号文章详情页保存的json文件路径
         """
         return os.path.join(self.save_path, f"{self.get_article_id}.json")
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
     def fetch_content(self) -> str:
         """获取公众号文章详情页内容
-           该方法会有重试机制，如果状态码不是200，则重试3次每次等待1秒
+           该方法会有重试机制，如果状态码不是200，则重试3次每次等1秒
         Raises:
             Exception: 获取内容失败
 
@@ -374,7 +493,7 @@ class WeChatNewsCrawler:
             html_content (str): 公众号文章详情页内容
 
         Returns:
-            str: 公众号文章详情页发布时间
+            str: 公众号文章详情发布时间
         """
         js_re_pattern = r"var createTime = '(\d{4}-\d{2}-\d{2} \d{2}:\d{2})';"
         match = re.search(js_re_pattern, html_content)
@@ -383,16 +502,24 @@ class WeChatNewsCrawler:
         return ""
 
     def parse_html_to_news_meta(self, html_content: str) -> NewsMetaInfo:
-        """解析公众号文章详情页元信息
-
-        Args:
-            html_content (str): 公众号文章详情页内容
-
-        Returns:
-            NewsMetaInfo: 公众号文章元信息
-        """
+        """解析公众号文章详情页元信息"""
         logger.info(f"Start to parse html to news meta, news_url: {self.new_url}")
 
+        ssr_data = _parse_ssr_data(html_content)
+        if ssr_data:
+            author_name = ssr_data.get("nick_name", "")
+            create_time_match = re.search(
+                r"var\s+createTime\s*=\s*'([^']+)'\s*;", html_content
+            )
+            publish_time = create_time_match.group(1) if create_time_match else ""
+
+            return NewsMetaInfo(
+                publish_time=publish_time.strip(),
+                author_name=author_name.strip(),
+                author_url="",  # SSR页面中没有作者链接
+            )
+
+        # 原有的解析逻辑
         sel = Selector(text=html_content)
         publish_time = self._parse_publish_time(html_content)
         wechat_name = sel.xpath("string(//span[@id='profileBt'])").get("").strip() or ""
@@ -409,23 +536,22 @@ class WeChatNewsCrawler:
         return NewsMetaInfo(
             publish_time=publish_time.strip(),
             author_name=author_name.strip(),
-            author_url="",  # 公众号文章详情页中没有作者链接
+            author_url="",
         )
 
     def parse_content(self, html: str) -> NewsItem:
-        """解析公众号文章内容
-
-        Args:
-            html (str): 公众号文章内容
-
-        Returns:
-            NewsItem: 公众号文章详情
-        """
+        """解析公众号文章内容"""
         result = NewsItem()
-        selector = Selector(text=html)
+        title = ""  # 初始化title变量
 
-        # 获取标题微信公众号这边因为内容创作者的富文本编辑可能是多样的,用h1的方式可能正文内容中也会包含h1标签，所以这里用h1+ID的方式获取标题
-        title = selector.xpath('//h1[@id="activity-name"]/text()').get("")
+        ssr_data = _parse_ssr_data(html)
+        if ssr_data:
+            title = ssr_data.get("title", "")
+        else:
+            # 原有的解析逻辑
+            selector = Selector(text=html)
+            title = selector.xpath('//h1[@id="activity-name"]/text()').get("")
+
         if not title:
             raise Exception("Failed to get title")
 
@@ -438,7 +564,7 @@ class WeChatNewsCrawler:
         result.meta_info = meta_info
         result.contents = contents
 
-        # 提取文本、图片、视频放到单独的列表中，备用
+        # 提取文本、图片、视频放到列表中，备用
         result.texts = [
             content.content for content in contents if content.type == ContentType.TEXT
         ]
@@ -497,6 +623,9 @@ if __name__ == "__main__":
     article_url6 = "https://mp.weixin.qq.com/s/1M_H0Q83z73LumchZ03zwA"
     article_url7 = "https://mp.weixin.qq.com/s/q2ibCgE9Pr3jeRTtTNLOjQ"
     article_url8 = "https://mp.weixin.qq.com/s/GFcXLkqMvyuTpNWhrSPq6g"
+
+    # 小红书风格的新公众号页面（页面结构完全不一样，使用的是vue的ssr渲染的page，需要单独解析）
+    article_url9 = "https://mp.weixin.qq.com/s/RUHJpS9w3RhuhEm94z-1Kw"
     for article_url in [
         # article_url1,
         # article_url2,
@@ -504,8 +633,9 @@ if __name__ == "__main__":
         # article_url4,
         # article_url5,
         # article_url6,
-        # article_url7,
+        article_url7,
         article_url8,
+        article_url9,
     ]:
         crawler = WeChatNewsCrawler(article_url, save_path="data/")
         crawler.run()
