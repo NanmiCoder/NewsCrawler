@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from tenacity import RetryError, retry, stop_after_attempt, wait_fixed
 
 
-FIXED_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+FIXED_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 # 微信公众号不带cookie也可以访问，但是不确定是否爬取多了会有影响，这里可以填写自用cookie
 FIXED_COOKIE = "RK=KfsE+4gSss;rewardsn=;ptcz=13cd54e3b6207f8e605c9a70630509394ef82a923e405fcf0c7c562de1b6e986;wxtokenkey=777"
 
@@ -479,9 +479,13 @@ class WeChatNewsCrawler:
             str: 公众号文章详情页内容
         """
         logger.info(f"Start to fetch content from {self.new_url}")
-        # from curl_cffi import requests
-        # response = requests.get(self.new_url, headers=self.headers, impersonate="chrome")
-        response = requests.get(self.new_url, headers=self.headers)
+        # 使用curl_cffi库请求 模拟chrome的ssl指纹
+        from curl_cffi import requests
+
+        response = requests.get(
+            self.new_url, headers=self.headers, impersonate="chrome"
+        )
+        # response = requests.get(self.new_url, headers=self.headers)
         if response.status_code != 200:
             raise Exception(f"Failed to fetch content: {response.status_code}")
         response.encoding = "utf-8"
@@ -630,12 +634,12 @@ if __name__ == "__main__":
     article_url9 = "https://mp.weixin.qq.com/s/RUHJpS9w3RhuhEm94z-1Kw"
     article_url10 = "https://mp.weixin.qq.com/s/deS-7QqTWyat-l5Ex39ZDA"
     for article_url in [
-        # article_url1,
-        # article_url2,
-        # article_url3,
-        # article_url4,
-        # article_url5,
-        # article_url6,
+        article_url1,
+        article_url2,
+        article_url3,
+        article_url4,
+        article_url5,
+        article_url6,
         article_url7,
         article_url8,
         article_url9,

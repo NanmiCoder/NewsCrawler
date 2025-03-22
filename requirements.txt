@@ -7,4 +7,4 @@ tenacity==8.2.2
 DrissionPage==4.1.0.9
 pytz==2024.2
 demjson3==3.0.6
-
+curl_cffi==0.7.3
