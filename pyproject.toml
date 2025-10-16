@@ -1,0 +1,50 @@
+[project]
+name = "news-crawler-collection"
+version = "0.1.0"
+description = "A multi-platform news and content crawler collection for educational purposes"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "lxml==5.3.0",
+    "parsel==1.9.1",
+    "playwright==1.42.0",
+    "pydantic==2.9.2",
+    "requests==2.32.3",
+    "tenacity==8.2.2",
+    "DrissionPage==4.1.0.9",
+    "pytz==2024.2",
+    "demjson3==3.0.6",
+    "curl-cffi==0.7.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = []
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "toutiao_news",
+    "wechat_news",
+    "detik_news",
+    "naver_news",
+    "lennysnewsletter",
+    "quora",
+    "pexel",
+    "pixabay",
+    "cover_video",
+    "mixkit_video",
+    "video_config",
+    "libs",
+]
+
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true

@@ -167,3 +167,16 @@ data/
 .DS_Store
 downloads/
 pexel/downloads/
+
+# News Extractor UI
+# Frontend
+news-extractor-ui/frontend/node_modules/
+news-extractor-ui/frontend/dist/
+news-extractor-ui/frontend/.vite/
+news-extractor-ui/frontend/package-lock.json
+
+# Backend
+news-extractor-ui/backend/.venv/
+news-extractor-ui/backend/__pycache__/
+news-extractor-ui/backend/*.pyc
+news-extractor-ui/backend/uv.lock
