@@ -1,5 +1,7 @@
 # NewsCrawlerCollection
 
+[English](README.en.md) · 中文
+
 一个多平台新闻内容爬取工具集，支持命令行调用和 Web UI 两种使用方式。
 
 ![Web UI](static/images/01_webui.png)

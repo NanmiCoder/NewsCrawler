@@ -3,7 +3,7 @@
     <div class="section-header">
       <h2 class="section-title">
         <span class="title-icon">🔗</span>
-        <span>输入链接</span>
+        <span>{{ t('input.title') }}</span>
       </h2>
     </div>
 
@@ -23,7 +23,7 @@
           v-if="url"
           class="btn-clear"
           @click="clearInput"
-          title="清空"
+          :title="t('input.clear')"
         >
           <span class="clear-icon">✕</span>
         </button>
@@ -34,10 +34,10 @@
           <div class="detected-content">
             <span class="detected-icon">✓</span>
             <span class="detected-text">
-              已识别平台: <strong class="platform-highlight">{{ platformName }}</strong>
+              {{ t('input.detectedPlatform') }}: <strong class="platform-highlight">{{ platformName }}</strong>
             </span>
           </div>
-          <div class="detected-badge">智能识别</div>
+          <div class="detected-badge">{{ t('input.smartDetection') }}</div>
         </div>
       </transition>
     </div>
@@ -50,14 +50,17 @@
       >
         <span v-if="loading" class="loading-spinner">⏳</span>
         <span v-else class="btn-icon">🚀</span>
-        <span class="btn-text">{{ loading ? '提取中...' : '开始提取' }}</span>
+        <span class="btn-text">{{ loading ? t('input.extracting') : t('input.extractButton') }}</span>
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   loading: boolean
@@ -71,55 +74,57 @@ const emit = defineEmits<{
 const url = ref('')
 const urlInput = ref<HTMLInputElement>()
 const detectedPlatform = ref('')
-const platformName = ref('')
 
 const platformMap: Record<string, string> = {
-  'mp.weixin.qq.com': '微信公众号',
-  'toutiao.com': '今日头条',
-  'detik.com': 'Detik News',
-  'naver.com': 'Naver Blog',
-  'lennysnewsletter.com': "Lenny's Newsletter",
-  'quora.com': 'Quora'
+  'mp.weixin.qq.com': 'wechat',
+  'toutiao.com': 'toutiao',
+  'detik.com': 'detik',
+  'naver.com': 'naver',
+  'lennysnewsletter.com': 'lenny',
+  'quora.com': 'quora'
 }
+
+const platformName = computed(() => {
+  if (!detectedPlatform.value) return ''
+  const key = platformMap[detectedPlatform.value]
+  return key ? t(`platforms.${key}.name`) : ''
+})
 
 // 每个平台的示例 placeholder
-const platformPlaceholders: Record<string, string> = {
-  'wechat': '粘贴或输入微信公众号链接，例如: https://mp.weixin.qq.com/s/xxxxx',
-  'toutiao': '粘贴或输入今日头条链接，例如: https://www.toutiao.com/article/7123456789012345678',
-  'lenny': "粘贴或输入 Lenny's Newsletter 链接，例如: https://www.lennysnewsletter.com/p/article-title",
-  'naver': '粘贴或输入 Naver 博客链接，例如: https://blog.naver.com/username/223618759620',
-  'detik': '粘贴或输入 Detik News 链接，例如: https://news.detik.com/berita/d-7123456/news-title',
-  'quora': '粘贴或输入 Quora 回答链接，例如: https://www.quora.com/question/answers/123456789'
-}
+const platformPlaceholders = computed(() => ({
+  'wechat': t('input.placeholders.wechat'),
+  'toutiao': t('input.placeholders.toutiao'),
+  'lenny': t('input.placeholders.lenny'),
+  'naver': t('input.placeholders.naver'),
+  'detik': t('input.placeholders.detik'),
+  'quora': t('input.placeholders.quora')
+}))
 
-const placeholder = ref('粘贴或输入新闻链接，支持微信、头条、Lenny、Naver、Detik、Quora')
+const placeholder = ref(t('input.placeholders.default'))
 
 // 监听 URL 变化，自动检测平台
 watch(url, (newUrl) => {
   if (!newUrl) {
     detectedPlatform.value = ''
-    platformName.value = ''
     return
   }
 
-  for (const [domain, name] of Object.entries(platformMap)) {
+  for (const domain of Object.keys(platformMap)) {
     if (newUrl.includes(domain)) {
       detectedPlatform.value = domain
-      platformName.value = name
       return
     }
   }
 
   detectedPlatform.value = ''
-  platformName.value = ''
 })
 
 // 监听选中的平台，更新 placeholder
 watch(() => props.selectedPlatform, (newPlatform) => {
-  if (newPlatform && platformPlaceholders[newPlatform]) {
-    placeholder.value = platformPlaceholders[newPlatform]
+  if (newPlatform && platformPlaceholders.value[newPlatform]) {
+    placeholder.value = platformPlaceholders.value[newPlatform]
   } else {
-    placeholder.value = '粘贴或输入新闻链接，支持微信、头条、Lenny、Naver、Detik、Quora'
+    placeholder.value = t('input.placeholders.default')
   }
 })
 

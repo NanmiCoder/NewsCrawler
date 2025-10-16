@@ -1,13 +1,13 @@
 <template>
   <div class="result-viewer-new card">
     <div class="result-header">
-      <h2 class="section-title">✨ 提取结果</h2>
+      <h2 class="section-title">✨ {{ t('results.title') }}</h2>
       <div class="header-actions">
         <button class="btn btn-sm" @click="downloadFile">
-          📥 下载
+          📥 {{ t('results.actions.download') }}
         </button>
         <button class="btn btn-sm" @click="copyToClipboard">
-          📋 复制
+          📋 {{ t('results.actions.copy') }}
         </button>
       </div>
     </div>
@@ -17,21 +17,21 @@
       <div class="meta-header">
         <h3 class="article-title">{{ result.data.title }}</h3>
         <span class="platform-tag">
-          {{ platformNames[result.platform || ''] || result.platform }}
+          {{ platformNames.value[result.platform || ''] || result.platform }}
         </span>
       </div>
 
       <div class="meta-details">
         <div class="meta-item" v-if="result.data.meta_info?.author_name">
-          <span class="meta-label">作者</span>
+          <span class="meta-label">{{ t('results.metadata.author') }}</span>
           <span class="meta-value">{{ result.data.meta_info.author_name }}</span>
         </div>
         <div class="meta-item" v-if="result.data.meta_info?.publish_time">
-          <span class="meta-label">发布时间</span>
+          <span class="meta-label">{{ t('results.metadata.publishTime') }}</span>
           <span class="meta-value">{{ result.data.meta_info.publish_time }}</span>
         </div>
         <div class="meta-item">
-          <span class="meta-label">提取时间</span>
+          <span class="meta-label">{{ t('results.metadata.extractTime') }}</span>
           <span class="meta-value">{{ formatTime(result.extracted_at) }}</span>
         </div>
       </div>
@@ -40,17 +40,17 @@
         <div class="stat-item">
           <span class="stat-icon">📝</span>
           <span class="stat-value">{{ result.data.texts?.length || 0 }}</span>
-          <span class="stat-label">段落</span>
+          <span class="stat-label">{{ t('results.content.paragraphs') }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-icon">🖼️</span>
           <span class="stat-value">{{ result.data.images?.length || 0 }}</span>
-          <span class="stat-label">图片</span>
+          <span class="stat-label">{{ t('results.content.images') }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-icon">🎬</span>
           <span class="stat-value">{{ result.data.videos?.length || 0 }}</span>
-          <span class="stat-label">视频</span>
+          <span class="stat-label">{{ t('results.content.videos') }}</span>
         </div>
       </div>
     </div>
@@ -87,7 +87,7 @@
               <div class="image-wrapper">
                 <img
                   :src="getProxiedImageUrl(item.content)"
-                  :alt="item.desc || '图片'"
+                  :alt="item.desc || t('results.content.imageAlt')"
                   loading="lazy"
                   @error="handleImageError"
                 />
@@ -96,7 +96,7 @@
             <template v-else-if="item.type === 'video'">
               <div class="video-wrapper">
                 <a :href="item.content" target="_blank" class="video-link">
-                  🎬 查看视频: {{ item.content }}
+                  🎬 {{ t('results.content.viewVideo') }}: {{ item.content }}
                 </a>
               </div>
             </template>
@@ -120,18 +120,18 @@
           <div v-for="(img, index) in result.data.images" :key="index" class="image-item">
             <img
               :src="getProxiedImageUrl(img)"
-              :alt="`图片 ${index + 1}`"
+              :alt="`${t('results.content.image')} ${index + 1}`"
               loading="lazy"
               @error="handleImageError"
             />
             <div class="image-overlay">
-              <a :href="img" target="_blank" class="btn-view-full">查看原图</a>
+              <a :href="img" target="_blank" class="btn-view-full">{{ t('results.content.viewOriginal') }}</a>
             </div>
           </div>
         </div>
         <div v-else class="empty-state">
           <span class="empty-icon">🖼️</span>
-          <p>该文章没有图片</p>
+          <p>{{ t('results.content.noImages') }}</p>
         </div>
       </div>
     </div>
@@ -140,6 +140,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { ExtractResponse } from '@/types'
 import hljs from 'highlight.js/lib/core'
 import json from 'highlight.js/lib/languages/json'
@@ -148,27 +149,29 @@ import 'highlight.js/styles/github-dark.css'
 // 注册 JSON 语言
 hljs.registerLanguage('json', json)
 
+const { t } = useI18n()
+
 const props = defineProps<{
   result: ExtractResponse
 }>()
 
 const activeTab = ref('preview')
 
-const tabs = [
-  { id: 'preview', label: '预览', icon: '👁️' },
+const tabs = computed(() => [
+  { id: 'preview', label: t('results.tabs.preview'), icon: '👁️' },
   { id: 'markdown', label: 'Markdown', icon: '📝' },
   { id: 'json', label: 'JSON', icon: '{ }' },
-  { id: 'images', label: '图片', icon: '🖼️' }
-]
+  { id: 'images', label: t('results.tabs.images'), icon: '🖼️' }
+])
 
-const platformNames: Record<string, string> = {
-  wechat: '微信公众号',
-  toutiao: '今日头条',
-  detik: 'Detik News',
-  naver: 'Naver Blog',
-  lenny: "Lenny's Newsletter",
-  quora: 'Quora'
-}
+const platformNames = computed(() => {
+  const platforms: Record<string, string> = {}
+  const platformKeys = ['wechat', 'toutiao', 'detik', 'naver', 'lenny', 'quora']
+  platformKeys.forEach(key => {
+    platforms[key] = t(`platforms.${key}.name`)
+  })
+  return platforms
+})
 
 const formattedJson = computed(() => {
   return JSON.stringify(props.result.data, null, 2)
@@ -259,9 +262,9 @@ const copyToClipboard = async () => {
 
   try {
     await navigator.clipboard.writeText(content)
-    alert('✓ 已复制到剪贴板')
+    alert(`✓ ${t('results.actions.copied')}`)
   } catch (error) {
-    alert('✗ 复制失败，请手动复制')
+    alert(`✗ ${t('results.actions.copyFailed')}`)
   }
 }
 
@@ -278,8 +281,8 @@ const getProxiedImageUrl = (originalUrl: string): string => {
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
   // 图片加载失败时，显示占位图
-  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7lm77niYfliqDovb3lpLHotKU8L3RleHQ+PC9zdmc+'
-  img.alt = '图片加载失败'
+  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7lm77niYfliqDovb3lpLXotKU8L3RleHQ+PC9zdmc+'
+  img.alt = t('results.content.imageLoadFailed')
 }
 </script>
 

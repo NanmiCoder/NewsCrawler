@@ -3,9 +3,9 @@
     <div class="section-header">
       <h2 class="section-title">
         <span class="title-icon">🚀</span>
-        <span>选择平台</span>
+        <span>{{ t('platforms.selectTitle') }}</span>
       </h2>
-      <p class="section-desc">选择您要提取内容的平台，或直接粘贴链接自动识别</p>
+      <p class="section-desc">{{ t('platforms.selectDesc') }}</p>
     </div>
 
     <div class="platforms-grid">
@@ -34,7 +34,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Platform {
   id: string
@@ -43,50 +44,52 @@ interface Platform {
   description: string
 }
 
+const { t } = useI18n()
+
 const emit = defineEmits<{
   'platform-selected': [platformId: string]
 }>()
 
 const selectedPlatform = ref<string>('')
 
-const platforms: Platform[] = [
+const platforms = computed<Platform[]>(() => [
   {
     id: 'wechat',
-    name: '微信公众号',
+    name: t('platforms.wechat.name'),
     icon: '/logos/wechat.webp',
-    description: '提取公众号文章内容'
+    description: t('platforms.wechat.description')
   },
   {
     id: 'toutiao',
-    name: '今日头条',
+    name: t('platforms.toutiao.name'),
     icon: '/logos/toutiao.png',
-    description: '提取头条新闻文章'
+    description: t('platforms.toutiao.description')
   },
   {
     id: 'lenny',
-    name: "Lenny's Newsletter",
+    name: t('platforms.lenny.name'),
     icon: '/logos/lennys_newsletter_logo.jpeg',
-    description: '提取产品管理通讯'
+    description: t('platforms.lenny.description')
   },
   {
     id: 'naver',
-    name: 'Naver Blog',
+    name: t('platforms.naver.name'),
     icon: '/logos/Naver_Blog.jpg',
-    description: '提取韩国博客内容'
+    description: t('platforms.naver.description')
   },
   {
     id: 'detik',
-    name: 'Detik News',
+    name: t('platforms.detik.name'),
     icon: '/logos/Detik_News.png',
-    description: '提取印尼新闻文章'
+    description: t('platforms.detik.description')
   },
   {
     id: 'quora',
-    name: 'Quora',
+    name: t('platforms.quora.name'),
     icon: '/logos/Quora.png',
-    description: '提取问答内容'
+    description: t('platforms.quora.description')
   }
-]
+])
 
 const selectPlatform = (platformId: string) => {
   selectedPlatform.value = platformId
