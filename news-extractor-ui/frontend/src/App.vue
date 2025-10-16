@@ -148,10 +148,16 @@ const handleExtract = async (url: string) => {
     progress.value = 100
     progressMessage.value = t('common.extractComplete')
 
+    // 清理定时器
+    clearInterval(progressInterval)
+
+    // 使用nextTick确保DOM更新顺序正确
     setTimeout(() => {
-      result.value = response
       loading.value = false
-      clearInterval(progressInterval)
+      // 等待loading状态更新后再设置result，避免DOM冲突
+      setTimeout(() => {
+        result.value = response
+      }, 50)
     }, 500)
   } catch (error: any) {
     clearInterval(progressInterval)
