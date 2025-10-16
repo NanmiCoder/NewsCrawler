@@ -17,7 +17,7 @@
       <div class="meta-header">
         <h3 class="article-title">{{ result.data.title }}</h3>
         <span class="platform-tag">
-          {{ platformNames.value[result.platform || ''] || result.platform }}
+          {{ platformNames[result.platform || ''] || result.platform }}
         </span>
       </div>
 
