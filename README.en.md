@@ -8,7 +8,7 @@ A multi-platform news and content crawler collection, supporting both command-li
 
 ## 🎯 Key Features
 
-- **Multi-Platform Support** - 6+ mainstream news/content platforms (WeChat, Toutiao, Lenny, Naver, Detik, Quora)
+- **Multi-Platform Support** - 7+ mainstream news/content platforms (WeChat, Toutiao, NetEase, Lenny, Naver, Detik, Quora)
 - **Dual Usage Modes** - Supports both Python API calls and Web UI operations
 - **Unified Data Format** - All platforms output standardized JSON format
 - **Modern Tooling** - Uses uv package manager for lightning-fast dependency installation
@@ -23,6 +23,7 @@ A multi-platform news and content crawler collection, supporting both command-li
 |----------|-------------|--------|
 | WeChat Official Accounts | `mp.weixin.qq.com` | ✅ |
 | Toutiao | `toutiao.com` | ✅ |
+| NetEase News | `163.com` | ✅ |
 | Lenny's Newsletter | `lennysnewsletter.com` | ✅ |
 | Naver Blog | `blog.naver.com` | ✅ |
 | Detik News | `detik.com` | ✅ |
@@ -144,6 +145,7 @@ NewsCrawlerCollection/
 ├── news_crawler/              # News crawler modules (Core)
 │   ├── wechat_news/          # WeChat Official Accounts
 │   ├── toutiao_news/         # Toutiao
+│   ├── netease_news/         # NetEase News
 │   ├── lennysnewsletter/     # Lenny's Newsletter
 │   ├── naver_news/           # Naver Blog
 │   ├── detik_news/           # Detik News
