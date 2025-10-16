@@ -1,0 +1,129 @@
+{
+  "app": {
+    "title": "Smart News Extractor",
+    "subtitle": "One-click extraction of news content from the web. Supports WeChat, Toutiao, Lenny, Naver and 6+ mainstream platforms",
+    "stats": {
+      "platforms": "Platforms",
+      "accuracy": "Accuracy",
+      "responseTime": "Response Time"
+    }
+  },
+  "platforms": {
+    "title": "Supported Platforms",
+    "selectTitle": "Select Platform",
+    "selectDesc": "Choose the platform to extract content from, or paste a link for auto-detection",
+    "wechat": {
+      "name": "WeChat Official Accounts",
+      "description": "Extract WeChat article content"
+    },
+    "toutiao": {
+      "name": "Toutiao",
+      "description": "Extract Toutiao article content"
+    },
+    "lenny": {
+      "name": "Lenny's Newsletter",
+      "description": "Extract Lenny subscription content"
+    },
+    "naver": {
+      "name": "Naver Blog",
+      "description": "Extract Naver blog articles"
+    },
+    "detik": {
+      "name": "Detik News",
+      "description": "Extract Detik news content"
+    },
+    "quora": {
+      "name": "Quora",
+      "description": "Extract Quora Q&A content"
+    }
+  },
+  "input": {
+    "title": "Enter URL",
+    "placeholder": "Enter the complete article URL...",
+    "placeholders": {
+      "wechat": "Paste or enter WeChat article link, e.g.: https://mp.weixin.qq.com/s/xxxxx",
+      "toutiao": "Paste or enter Toutiao article link, e.g.: https://www.toutiao.com/article/7123456789012345678",
+      "lenny": "Paste or enter Lenny's Newsletter link, e.g.: https://www.lennysnewsletter.com/p/article-title",
+      "naver": "Paste or enter Naver blog link, e.g.: https://blog.naver.com/username/223618759620",
+      "detik": "Paste or enter Detik News link, e.g.: https://news.detik.com/berita/d-7123456/news-title",
+      "quora": "Paste or enter Quora answer link, e.g.: https://www.quora.com/question/answers/123456789",
+      "default": "Paste or enter news link, supports WeChat, Toutiao, Lenny, Naver, Detik, Quora"
+    },
+    "selectPlatform": "Please select a platform first",
+    "extractButton": "Start Extraction",
+    "extracting": "Extracting...",
+    "clear": "Clear",
+    "detectedPlatform": "Detected Platform",
+    "smartDetection": "Smart Detection"
+  },
+  "progress": {
+    "title": "Extraction Progress",
+    "detecting": "Detecting platform...",
+    "extracting": "Extracting content...",
+    "converting": "Converting format...",
+    "completed": "Extraction completed!",
+    "failed": "Extraction failed"
+  },
+  "results": {
+    "title": "Extraction Results",
+    "tabs": {
+      "json": "JSON Data",
+      "markdown": "Markdown",
+      "preview": "Preview",
+      "images": "Images"
+    },
+    "metadata": {
+      "title": "Article Information",
+      "articleTitle": "Title",
+      "author": "Author",
+      "publishTime": "Published",
+      "url": "Original URL",
+      "platform": "Platform",
+      "extractTime": "Extracted"
+    },
+    "content": {
+      "texts": "Text Content",
+      "images": "Images",
+      "videos": "Videos",
+      "paragraphs": "Paragraphs",
+      "image": "Image",
+      "imageAlt": "Image",
+      "viewVideo": "View Video",
+      "viewOriginal": "View Original",
+      "noImages": "No images in this article",
+      "imageLoadFailed": "Image load failed"
+    },
+    "actions": {
+      "copy": "Copy",
+      "download": "Download",
+      "copied": "Copied to clipboard",
+      "copyFailed": "Copy failed, please copy manually",
+      "downloadJson": "Download JSON",
+      "downloadMarkdown": "Download Markdown"
+    }
+  },
+  "errors": {
+    "invalidUrl": "Please enter a valid URL",
+    "extractFailed": "Extraction failed, please try again later",
+    "networkError": "Network error, please check your connection",
+    "unsupportedPlatform": "Unsupported platform",
+    "emptyUrl": "URL cannot be empty"
+  },
+  "common": {
+    "loading": "Loading...",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "comingSoon": "Coming Soon",
+    "extractNew": "Extract New Content",
+    "about": "About",
+    "connecting": "Connecting...",
+    "fetchingHtml": "Fetching HTML...",
+    "parsingContent": "Parsing content...",
+    "almostDone": "Almost done...",
+    "extractComplete": "Extraction complete ✓"
+  }
+}

@@ -2,34 +2,37 @@
   <div class="app-container">
     <!-- Hero Section -->
     <header class="hero-section">
+      <div class="lang-switcher-wrapper">
+        <LanguageSwitcher />
+      </div>
       <div class="hero-content">
         <div class="hero-badge-wrapper">
           <div class="hero-badge">
             <span class="badge-icon">✨</span>
             <span>AI-Powered Content Extraction</span>
           </div>
-          <span class="coming-soon-tag">即将推出</span>
+          <span class="coming-soon-tag">{{ t('common.comingSoon') }}</span>
         </div>
         <h1 class="hero-title">
-          <span class="title-gradient">智能新闻提取器</span>
+          <span class="title-gradient">{{ t('app.title') }}</span>
         </h1>
         <p class="hero-subtitle">
-          一键提取全网新闻内容，支持微信、头条、Lenny、Naver等6+主流平台
+          {{ t('app.subtitle') }}
         </p>
         <div class="hero-stats">
           <div class="stat-item">
             <span class="stat-number">6+</span>
-            <span class="stat-label">支持平台</span>
+            <span class="stat-label">{{ t('app.stats.platforms') }}</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-number">99%</span>
-            <span class="stat-label">准确率</span>
+            <span class="stat-label">{{ t('app.stats.accuracy') }}</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-number">< 3s</span>
-            <span class="stat-label">响应时间</span>
+            <span class="stat-label">{{ t('app.stats.responseTime') }}</span>
           </div>
         </div>
       </div>
@@ -72,7 +75,7 @@
       <div v-if="result && !loading" class="restart-section">
         <button class="btn btn-outline" @click="restart">
           <span>🔄</span>
-          <span>提取新内容</span>
+          <span>{{ t('common.extractNew') }}</span>
         </button>
       </div>
     </main>
@@ -81,17 +84,17 @@
       <div class="footer-content">
         <div class="footer-brand">
           <img src="/logo.svg" alt="Logo" class="footer-logo" />
-          <span class="footer-name">智能新闻提取器</span>
+          <span class="footer-name">{{ t('app.title') }}</span>
         </div>
         <div class="footer-info">
           <p class="footer-tech">Powered by FastAPI + Vue 3</p>
           <div class="footer-links">
-            <a href="https://github.com" target="_blank" class="footer-link">
+            <a href="https://github.com/NanmiCoder/NewsCrawlerCollection" target="_blank" class="footer-link">
               <span>GitHub</span>
             </a>
             <span class="link-divider">·</span>
             <a href="#" @click.prevent="showAbout" class="footer-link">
-              <span>关于</span>
+              <span>{{ t('common.about') }}</span>
             </a>
           </div>
         </div>
@@ -102,12 +105,16 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import PlatformSelector from './components/PlatformSelector.vue'
 import UrlInputNew from './components/UrlInputNew.vue'
 import ExtractProgress from './components/ExtractProgress.vue'
 import ResultViewerNew from './components/ResultViewerNew.vue'
+import LanguageSwitcher from './components/LanguageSwitcher.vue'
 import { extractNews } from './services/api'
 import type { ExtractResponse } from './types'
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const progress = ref(0)
@@ -122,16 +129,16 @@ const handlePlatformSelected = (platformId: string) => {
 const handleExtract = async (url: string) => {
   loading.value = true
   progress.value = 0
-  progressMessage.value = '正在连接...'
+  progressMessage.value = t('common.connecting')
   result.value = null
 
   // 模拟进度
   const progressInterval = setInterval(() => {
     if (progress.value < 90) {
       progress.value += 10
-      if (progress.value === 30) progressMessage.value = '正在获取HTML...'
-      if (progress.value === 60) progressMessage.value = '正在解析内容...'
-      if (progress.value === 90) progressMessage.value = '即将完成...'
+      if (progress.value === 30) progressMessage.value = t('common.fetchingHtml')
+      if (progress.value === 60) progressMessage.value = t('common.parsingContent')
+      if (progress.value === 90) progressMessage.value = t('common.almostDone')
     }
   }, 500)
 
@@ -139,7 +146,7 @@ const handleExtract = async (url: string) => {
     // 总是请求 markdown 格式，这样所有标签页都能显示
     const response = await extractNews({ url, output_format: 'markdown' })
     progress.value = 100
-    progressMessage.value = '提取完成 ✓'
+    progressMessage.value = t('common.extractComplete')
 
     setTimeout(() => {
       result.value = response
@@ -149,7 +156,7 @@ const handleExtract = async (url: string) => {
   } catch (error: any) {
     clearInterval(progressInterval)
     loading.value = false
-    alert(`提取失败: ${error.message}`)
+    alert(`${t('errors.extractFailed')}: ${error.message}`)
   }
 }
 
@@ -160,7 +167,16 @@ const restart = () => {
 }
 
 const showAbout = () => {
-  alert('新闻提取器 v2.0\n\n支持平台:\n- 微信公众号\n- 今日头条\n- Lenny\'s Newsletter\n- Naver Blog\n- Detik News\n- Quora')
+  const platforms = [
+    t('platforms.wechat.name'),
+    t('platforms.toutiao.name'),
+    t('platforms.lenny.name'),
+    t('platforms.naver.name'),
+    t('platforms.detik.name'),
+    t('platforms.quora.name')
+  ].map(p => `- ${p}`).join('\n')
+
+  alert(`${t('app.title')} v2.0\n\n${t('platforms.title')}:\n${platforms}`)
 }
 </script>
 
@@ -181,6 +197,13 @@ const showAbout = () => {
   padding: 4rem 0 5rem;
   text-align: center;
   overflow: hidden;
+}
+
+.lang-switcher-wrapper {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
 }
 
 .hero-content {

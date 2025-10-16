@@ -1,6 +1,6 @@
 <template>
   <div class="progress-container card">
-    <h3 class="progress-title">📊 提取进度</h3>
+    <h3 class="progress-title">📊 {{ t('progress.title') }}</h3>
 
     <div class="progress-bar-container">
       <div class="progress-bar" :style="{ width: `${progress}%` }"></div>
@@ -14,6 +14,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 defineProps<{
   progress: number
   message: string

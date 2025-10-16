@@ -14,6 +14,7 @@
     "pinia": "^2.2.0",
     "prismjs": "^1.29.0",
     "vue": "^3.5.0",
+    "vue-i18n": "^9.14.5",
     "vue-router": "^4.4.0"
   },
   "devDependencies": {

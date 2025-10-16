@@ -1,0 +1,129 @@
+{
+  "app": {
+    "title": "智能新闻提取器",
+    "subtitle": "一键提取全网新闻内容，支持微信、头条、Lenny、Naver等6+主流平台",
+    "stats": {
+      "platforms": "支持平台",
+      "accuracy": "准确率",
+      "responseTime": "响应时间"
+    }
+  },
+  "platforms": {
+    "title": "支持的平台",
+    "selectTitle": "选择平台",
+    "selectDesc": "选择您要提取内容的平台，或直接粘贴链接自动识别",
+    "wechat": {
+      "name": "微信公众号",
+      "description": "提取公众号文章内容"
+    },
+    "toutiao": {
+      "name": "今日头条",
+      "description": "提取头条文章内容"
+    },
+    "lenny": {
+      "name": "Lenny's Newsletter",
+      "description": "提取 Lenny 订阅内容"
+    },
+    "naver": {
+      "name": "Naver Blog",
+      "description": "提取 Naver 博客文章"
+    },
+    "detik": {
+      "name": "Detik News",
+      "description": "提取 Detik 新闻内容"
+    },
+    "quora": {
+      "name": "Quora",
+      "description": "提取 Quora 问答内容"
+    }
+  },
+  "input": {
+    "title": "输入链接",
+    "placeholder": "请输入完整的文章 URL...",
+    "placeholders": {
+      "wechat": "粘贴或输入微信公众号链接，例如: https://mp.weixin.qq.com/s/xxxxx",
+      "toutiao": "粘贴或输入今日头条链接，例如: https://www.toutiao.com/article/7123456789012345678",
+      "lenny": "粘贴或输入 Lenny's Newsletter 链接，例如: https://www.lennysnewsletter.com/p/article-title",
+      "naver": "粘贴或输入 Naver 博客链接，例如: https://blog.naver.com/username/223618759620",
+      "detik": "粘贴或输入 Detik News 链接，例如: https://news.detik.com/berita/d-7123456/news-title",
+      "quora": "粘贴或输入 Quora 回答链接，例如: https://www.quora.com/question/answers/123456789",
+      "default": "粘贴或输入新闻链接，支持微信、头条、Lenny、Naver、Detik、Quora"
+    },
+    "selectPlatform": "请先选择一个平台",
+    "extractButton": "开始提取",
+    "extracting": "提取中...",
+    "clear": "清空",
+    "detectedPlatform": "已识别平台",
+    "smartDetection": "智能识别"
+  },
+  "progress": {
+    "title": "提取进度",
+    "detecting": "正在检测平台...",
+    "extracting": "正在提取内容...",
+    "converting": "正在转换格式...",
+    "completed": "提取完成!",
+    "failed": "提取失败"
+  },
+  "results": {
+    "title": "提取结果",
+    "tabs": {
+      "json": "JSON 数据",
+      "markdown": "Markdown",
+      "preview": "预览",
+      "images": "图片"
+    },
+    "metadata": {
+      "title": "文章信息",
+      "articleTitle": "标题",
+      "author": "作者",
+      "publishTime": "发布时间",
+      "url": "原文链接",
+      "platform": "平台",
+      "extractTime": "提取时间"
+    },
+    "content": {
+      "texts": "文本内容",
+      "images": "图片",
+      "videos": "视频",
+      "paragraphs": "段落",
+      "image": "图片",
+      "imageAlt": "图片",
+      "viewVideo": "查看视频",
+      "viewOriginal": "查看原图",
+      "noImages": "该文章没有图片",
+      "imageLoadFailed": "图片加载失败"
+    },
+    "actions": {
+      "copy": "复制",
+      "download": "下载",
+      "copied": "已复制到剪贴板",
+      "copyFailed": "复制失败，请手动复制",
+      "downloadJson": "下载 JSON",
+      "downloadMarkdown": "下载 Markdown"
+    }
+  },
+  "errors": {
+    "invalidUrl": "请输入有效的 URL",
+    "extractFailed": "提取失败，请稍后重试",
+    "networkError": "网络错误，请检查连接",
+    "unsupportedPlatform": "不支持的平台",
+    "emptyUrl": "URL 不能为空"
+  },
+  "common": {
+    "loading": "加载中...",
+    "retry": "重试",
+    "cancel": "取消",
+    "confirm": "确认",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "comingSoon": "即将推出",
+    "extractNew": "提取新内容",
+    "about": "关于",
+    "connecting": "正在连接...",
+    "fetchingHtml": "正在获取HTML...",
+    "parsingContent": "正在解析内容...",
+    "almostDone": "即将完成...",
+    "extractComplete": "提取完成 ✓"
+  }
+}
