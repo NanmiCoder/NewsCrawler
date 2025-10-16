@@ -6,6 +6,7 @@ from typing import Optional
 from ..adapters.base import CrawlerAdapter, NewsItem
 from ..adapters.wechat import WeChatAdapter
 from ..adapters.toutiao import ToutiaoAdapter
+from ..adapters.netease import NeteaseAdapter
 from ..adapters.detik import DetikAdapter
 from ..adapters.lenny import LennyAdapter
 from ..adapters.naver import NaverAdapter
@@ -17,6 +18,7 @@ from .detector import detect_platform
 ADAPTERS = {
     "wechat": WeChatAdapter(),
     "toutiao": ToutiaoAdapter(),
+    "netease": NeteaseAdapter(),
     "detik": DetikAdapter(),
     "lenny": LennyAdapter(),
     "naver": NaverAdapter(),
