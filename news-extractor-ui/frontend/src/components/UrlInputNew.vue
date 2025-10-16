@@ -78,6 +78,7 @@ const detectedPlatform = ref('')
 const platformMap: Record<string, string> = {
   'mp.weixin.qq.com': 'wechat',
   'toutiao.com': 'toutiao',
+  '163.com': 'netease',
   'detik.com': 'detik',
   'naver.com': 'naver',
   'lennysnewsletter.com': 'lenny',
@@ -94,6 +95,7 @@ const platformName = computed(() => {
 const platformPlaceholders = computed(() => ({
   'wechat': t('input.placeholders.wechat'),
   'toutiao': t('input.placeholders.toutiao'),
+  'netease': t('input.placeholders.netease'),
   'lenny': t('input.placeholders.lenny'),
   'naver': t('input.placeholders.naver'),
   'detik': t('input.placeholders.detik'),

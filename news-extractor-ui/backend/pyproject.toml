@@ -16,6 +16,7 @@ dependencies = [
     "pytz==2024.2",
     "demjson3==3.0.6",
     "curl-cffi==0.7.3",
+    "news-crawler-collection @ file:///Users/nanmi/workspace/github/NewsCrawlerCollection",
 ]
 
 [build-system]
@@ -24,6 +25,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.uv]
 dev-dependencies = []

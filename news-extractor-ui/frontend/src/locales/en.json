@@ -20,6 +20,10 @@
       "name": "Toutiao",
       "description": "Extract Toutiao article content"
     },
+    "netease": {
+      "name": "NetEase News",
+      "description": "Extract NetEase news content"
+    },
     "lenny": {
       "name": "Lenny's Newsletter",
       "description": "Extract Lenny subscription content"
@@ -43,6 +47,7 @@
     "placeholders": {
       "wechat": "Paste or enter WeChat article link, e.g.: https://mp.weixin.qq.com/s/xxxxx",
       "toutiao": "Paste or enter Toutiao article link, e.g.: https://www.toutiao.com/article/7123456789012345678",
+      "netease": "Paste or enter NetEase news link, e.g.: https://www.163.com/news/article/KC12OUHK000189FH.html",
       "lenny": "Paste or enter Lenny's Newsletter link, e.g.: https://www.lennysnewsletter.com/p/article-title",
       "naver": "Paste or enter Naver blog link, e.g.: https://blog.naver.com/username/223618759620",
       "detik": "Paste or enter Detik News link, e.g.: https://news.detik.com/berita/d-7123456/news-title",
