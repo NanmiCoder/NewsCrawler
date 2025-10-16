@@ -166,7 +166,7 @@ const tabs = computed(() => [
 
 const platformNames = computed(() => {
   const platforms: Record<string, string> = {}
-  const platformKeys = ['wechat', 'toutiao', 'detik', 'naver', 'lenny', 'quora']
+  const platformKeys = ['wechat', 'toutiao', 'netease', 'detik', 'naver', 'lenny', 'quora']
   platformKeys.forEach(key => {
     platforms[key] = t(`platforms.${key}.name`)
   })
