@@ -11,6 +11,7 @@ PLATFORM_PATTERNS = {
     "wechat": r"https?://mp\.weixin\.qq\.com/s/",
     "netease": r"https?://www\.163\.com/(news|dy)/article/",  # 支持news和dy两种路径
     "sohu": r"https?://www\.sohu\.com/a/",
+    "tencent": r"https?://news\.qq\.com/rain/a/",
     "detik": r"https?://news\.detik\.com/",
     "naver": r"https?://.*\.naver\.com/",
     "lenny": r"https?://www\.lennysnewsletter\.com/",
@@ -41,6 +42,7 @@ def get_supported_platforms() -> list[dict]:
         {"id": "wechat", "name": "微信公众号", "icon": "💬"},
         {"id": "netease", "name": "网易新闻", "icon": "📰"},
         {"id": "sohu", "name": "搜狐新闻", "icon": "📰"},
+        {"id": "tencent", "name": "腾讯新闻", "icon": "📰"},
         {"id": "detik", "name": "Detik News", "icon": "🌏"},
         {"id": "naver", "name": "Naver News", "icon": "🇰🇷"},
         {"id": "lenny", "name": "Lenny's Newsletter", "icon": "📮"},

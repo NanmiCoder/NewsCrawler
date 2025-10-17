@@ -21,7 +21,7 @@
         </p>
         <div class="hero-stats">
           <div class="stat-item">
-            <span class="stat-number">6+</span>
+            <span class="stat-number">9+</span>
             <span class="stat-label">{{ t('app.stats.platforms') }}</span>
           </div>
           <div class="stat-divider"></div>
