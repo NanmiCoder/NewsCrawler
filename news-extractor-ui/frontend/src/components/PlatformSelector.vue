@@ -78,6 +78,12 @@ const platforms = computed<Platform[]>(() => [
     description: t('platforms.sohu.description')
   },
   {
+    id: 'tencent',
+    name: t('platforms.tencent.name'),
+    icon: '/logos/tencent_news.webp',
+    description: t('platforms.tencent.description')
+  },
+  {
     id: 'lenny',
     name: t('platforms.lenny.name'),
     icon: '/logos/lennys_newsletter_logo.jpeg',

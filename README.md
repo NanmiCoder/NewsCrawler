@@ -8,7 +8,7 @@
 
 ## 🎯 项目特点
 
-- **多平台支持** - 8+ 主流新闻/内容平台（微信、头条、网易、搜狐、Lenny、Naver、Detik、Quora）
+- **多平台支持** - 9+ 主流新闻/内容平台（微信、头条、网易、搜狐、腾讯、Lenny、Naver、Detik、Quora）
 - **双模式使用** - 支持 Python 代码调用 和 Web UI 操作
 - **统一数据格式** - 所有平台输出标准化的 JSON 格式
 - **现代化工具** - 使用 uv 包管理器，极速安装依赖
@@ -25,6 +25,7 @@
 | 今日头条 | `toutiao.com` | ✅ |
 | 网易新闻 | `163.com` | ✅ |
 | 搜狐新闻 | `sohu.com` | ✅ |
+| 腾讯新闻 | `news.qq.com` | ✅ |
 | Lenny's Newsletter | `lennysnewsletter.com` | ✅ |
 | Naver Blog | `blog.naver.com` | ✅ |
 | Detik News | `detik.com` | ✅ |
@@ -148,6 +149,7 @@ NewsCrawlerCollection/
 │   ├── toutiao_news/         # 今日头条
 │   ├── netease_news/         # 网易新闻
 │   ├── sohu_news/            # 搜狐新闻
+│   ├── tencent_news/         # 腾讯新闻
 │   ├── lennysnewsletter/     # Lenny's Newsletter
 │   ├── naver_news/           # Naver Blog
 │   ├── detik_news/           # Detik News

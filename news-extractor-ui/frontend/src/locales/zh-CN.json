@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "智能新闻提取器",
-    "subtitle": "一键提取全网新闻内容，支持微信、头条、Lenny、Naver等6+主流平台",
+    "subtitle": "一键提取全网新闻内容，支持微信、头条、网易、搜狐、腾讯、Lenny、Naver、Detik、Quora等9个主流平台",
     "stats": {
       "platforms": "支持平台",
       "accuracy": "准确率",
@@ -28,6 +28,10 @@
       "name": "搜狐新闻",
       "description": "提取搜狐新闻内容"
     },
+    "tencent": {
+      "name": "腾讯新闻",
+      "description": "提取腾讯新闻内容"
+    },
     "lenny": {
       "name": "Lenny's Newsletter",
       "description": "提取 Lenny 订阅内容"
@@ -53,6 +57,7 @@
       "toutiao": "粘贴或输入今日头条链接，例如: https://www.toutiao.com/article/7123456789012345678",
       "netease": "粘贴或输入网易新闻链接，例如: https://www.163.com/news/article/KC12OUHK000189FH.html",
       "sohu": "粘贴或输入搜狐新闻链接，例如: https://www.sohu.com/a/945014338_160447",
+      "tencent": "粘贴或输入腾讯新闻链接，例如: https://news.qq.com/rain/a/20251016A07W8J00",
       "lenny": "粘贴或输入 Lenny's Newsletter 链接，例如: https://www.lennysnewsletter.com/p/article-title",
       "naver": "粘贴或输入 Naver 博客链接，例如: https://blog.naver.com/username/223618759620",
       "detik": "粘贴或输入 Detik News 链接，例如: https://news.detik.com/berita/d-7123456/news-title",

@@ -8,6 +8,7 @@ from ..adapters.wechat import WeChatAdapter
 from ..adapters.toutiao import ToutiaoAdapter
 from ..adapters.netease import NeteaseAdapter
 from ..adapters.sohu import SohuAdapter
+from ..adapters.tencent import TencentAdapter
 from ..adapters.detik import DetikAdapter
 from ..adapters.lenny import LennyAdapter
 from ..adapters.naver import NaverAdapter
@@ -21,6 +22,7 @@ ADAPTERS = {
     "toutiao": ToutiaoAdapter(),
     "netease": NeteaseAdapter(),
     "sohu": SohuAdapter(),
+    "tencent": TencentAdapter(),
     "detik": DetikAdapter(),
     "lenny": LennyAdapter(),
     "naver": NaverAdapter(),
