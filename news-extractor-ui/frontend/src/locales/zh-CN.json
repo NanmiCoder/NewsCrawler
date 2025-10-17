@@ -24,6 +24,10 @@
       "name": "网易新闻",
       "description": "提取网易新闻内容"
     },
+    "sohu": {
+      "name": "搜狐新闻",
+      "description": "提取搜狐新闻内容"
+    },
     "lenny": {
       "name": "Lenny's Newsletter",
       "description": "提取 Lenny 订阅内容"
@@ -48,6 +52,7 @@
       "wechat": "粘贴或输入微信公众号链接，例如: https://mp.weixin.qq.com/s/xxxxx",
       "toutiao": "粘贴或输入今日头条链接，例如: https://www.toutiao.com/article/7123456789012345678",
       "netease": "粘贴或输入网易新闻链接，例如: https://www.163.com/news/article/KC12OUHK000189FH.html",
+      "sohu": "粘贴或输入搜狐新闻链接，例如: https://www.sohu.com/a/945014338_160447",
       "lenny": "粘贴或输入 Lenny's Newsletter 链接，例如: https://www.lennysnewsletter.com/p/article-title",
       "naver": "粘贴或输入 Naver 博客链接，例如: https://blog.naver.com/username/223618759620",
       "detik": "粘贴或输入 Detik News 链接，例如: https://news.detik.com/berita/d-7123456/news-title",
