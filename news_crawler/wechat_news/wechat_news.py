@@ -5,70 +5,36 @@
 
 import json
 import logging
-import os
-import pathlib
 import re
-from enum import Enum
 from typing import List, Optional
 
-import requests
 import demjson3
 from parsel import Selector
-from pydantic import BaseModel, Field
-from tenacity import RetryError, retry, stop_after_attempt, wait_fixed
+from pydantic import Field
+
+from news_crawler.core import (
+    BaseNewsCrawler,
+    ContentItem,
+    ContentType,
+    NewsItem,
+    NewsMetaInfo,
+    RequestHeaders as BaseRequestHeaders,
+)
+from news_crawler.core.fetchers import CurlCffiFetcher, FetchRequest
 
 
 FIXED_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 # 微信公众号不带cookie也可以访问，但是不确定是否爬取多了会有影响，这里可以填写自用cookie
 FIXED_COOKIE = "RK=KfsE+4gSss;rewardsn=;ptcz=13cd54e3b6207f8e605c9a70630509394ef82a923e405fcf0c7c562de1b6e986;wxtokenkey=777"
 
-logger = logging.getLogger("WeChatNewsCrawler")
+logger = logging.getLogger(__name__)
 
 
-def init_logger():
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-
-
-class RequestHeaders(BaseModel):
+class RequestHeaders(BaseRequestHeaders):
     user_agent: str = Field(
-        default=FIXED_USER_AGENT, title="User-Agent", alias="User-Agent"
+        default=FIXED_USER_AGENT, alias="User-Agent"
     )
-    cookie: str = Field(default=FIXED_COOKIE, title="Cookie", alias="Cookie")
-
-
-class ContentType(str, Enum):
-    TEXT = "text"
-    IMAGE = "image"
-    VIDEO = "video"
-
-
-class ContentItem(BaseModel):
-    type: ContentType = Field(default=ContentType.TEXT, title="内容类型")
-    content: str = Field(default="", title="内容")
-    desc: str = Field(default="", title="描述")
-
-
-class NewsMetaInfo(BaseModel):
-    author_name: str = Field(default="", title="作者")
-    author_url: str = Field(default="", title="作者链接")
-    publish_time: str = Field(default="", title="发布时间")
-
-
-class NewsItem(BaseModel):
-    title: str = Field(default="", title="新闻标题")
-    news_url: str = Field(default="", title="新闻链接")
-    news_id: str = Field(default="", title="新闻ID")
-    meta_info: NewsMetaInfo = Field(default=NewsMetaInfo(), title="新闻元信息")
-    contents: List[ContentItem] = Field(default=[], title="新闻内容")
-    texts: List[str] = Field(default=[], title="新闻正文")
-    images: List[str] = Field(default=[], title="新闻图片")
-    videos: Optional[List[str]] = Field(default=[], title="新闻视频")
+    cookie: str = Field(default=FIXED_COOKIE, alias="Cookie")
 
 
 def _convert_js_obj_to_json(js_obj_str: str) -> str:
@@ -170,6 +136,7 @@ class WechatContentParser:
         Returns:
             List[ContentItem]: 公众号章内容，每个段落作为独立的ContentItem
         """
+        self._contents = []
         # 检查是否是SSR渲染的页面
         if "window.__QMTPL_SSR_DATA__" in html_content:
             return self.parse_ssr_content(html_content)
@@ -186,6 +153,10 @@ class WechatContentParser:
 
         contents = [item for item in self._contents if item.content.strip()]
         return self._remove_duplicate_contents(contents)
+
+    def parse(self, html_content: str) -> List[ContentItem]:
+        """兼容 ContentParser 协议。"""
+        return self.parse_html_to_news_content(html_content)
 
     def _remove_duplicate_contents(
         self, contents: List[ContentItem]
@@ -416,100 +387,46 @@ class WechatContentParser:
         return contents
 
 
-class WeChatNewsCrawler:
+class WeChatNewsCrawler(BaseNewsCrawler):
+    """微信公众平台文章爬虫实现。"""
+
+    headers_model = RequestHeaders
+    fetch_strategy = CurlCffiFetcher
+
     def __init__(
         self,
         new_url: str,
         save_path: str = "data/",
-        headers: RequestHeaders = RequestHeaders(),
+        headers: Optional[RequestHeaders] = None,
+        fetcher: Optional[CurlCffiFetcher] = None,
     ):
-        """初始化公众号文章详情爬虫
-
-        Args:
-            new_url (str): 公众号章详情页url
-            save_path (str, optional): 保存路径. Defaults to "".
-            headers (RequestHeaders, optional): 请求头. Defaults to RequestHeaders().
-        """
-        init_logger()
-        self.new_url = new_url
-        self.save_path = save_path
-        self.save_file_name = self.get_save_json_path()
-        self.headers = headers.model_dump()
+        super().__init__(new_url, save_path, headers=headers, fetcher=fetcher)
         self._content_parser = WechatContentParser()
 
     @property
     def get_base_url(self) -> str:
-        """获取公众号详情页基础url
-
-        Returns:
-            str: 公众号详情页基础url
-        """
+        """保留与旧版本兼容的基础 URL 属性。"""
         return "https://mp.weixin.qq.com"
 
-    @property
     def get_article_id(self) -> str:
-        """获取公众号详情页文章id
-            eg: https://mp.weixin.qq.com/s/3Sr6nYjE1RF05siTblD2mw?may_be_params=test
-                return: 3Sr6nYjE1RF05siTblD2mw
-        Returns:
-            str: 公众号详情页文章id
-        """
         try:
-            news_id = self.new_url.split("/s/")[1].split("?")[0]
-            return news_id
-        except Exception as e:
-            raise Exception(f"解析文章ID失败，请检查URL是否正确")
+            return self.new_url.split("/s/")[1].split("?")[0]
+        except Exception as exc:  # pragma: no cover - defensive branch
+            raise ValueError("解析文章ID失败，请检查URL是否正确") from exc
 
-    def get_save_json_path(self) -> str:
-        """获取公众号文章详情页保存的json文件路径
-
-        Returns:
-            str: 众号文章详情页保存的json文件路径
-        """
-        return os.path.join(self.save_path, f"{self.get_article_id}.json")
-
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
-    def fetch_content(self) -> str:
-        """获取公众号文章详情页内容
-           该方法会有重试机制，如果状态码不是200，则重试3次每次等1秒
-        Raises:
-            Exception: 获取内容失败
-
-        Returns:
-            str: 公众号文章详情页内容
-        """
-        logger.info(f"Start to fetch content from {self.new_url}")
-        # 使用curl_cffi库请求 模拟chrome的ssl指纹
-        from curl_cffi import requests
-
-        response = requests.get(
-            self.new_url, headers=self.headers, impersonate="chrome"
-        )
-        # response = requests.get(self.new_url, headers=self.headers)
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch content: {response.status_code}")
-        response.encoding = "utf-8"
-        return response.text
+    def build_fetch_request(self) -> FetchRequest:
+        request = super().build_fetch_request()
+        request.impersonate = "chrome"
+        return request
 
     @staticmethod
     def _parse_publish_time(html_content: str) -> str:
-        """解析公众号文章详情页发布时间
-
-        Args:
-            html_content (str): 公众号文章详情页内容
-
-        Returns:
-            str: 公众号文章详情发布时间
-        """
-        js_re_pattern = r"var createTime = '(\d{4}-\d{2}-\d{2} \d{2}:\d{2})';"
-        match = re.search(js_re_pattern, html_content)
-        if match:
-            return match.group(1)
-        return ""
+        pattern = r"var createTime = '(\d{4}-\d{2}-\d{2} \d{2}:\d{2})';"
+        match = re.search(pattern, html_content)
+        return match.group(1) if match else ""
 
     def parse_html_to_news_meta(self, html_content: str) -> NewsMetaInfo:
-        """解析公众号文章详情页元信息"""
-        logger.info(f"Start to parse html to news meta, news_url: {self.new_url}")
+        self.logger.info("Start to parse html to news meta, news_url: %s", self.new_url)
 
         ssr_data = _parse_ssr_data(html_content)
         if ssr_data:
@@ -522,10 +439,9 @@ class WeChatNewsCrawler:
             return NewsMetaInfo(
                 publish_time=publish_time.strip(),
                 author_name=author_name.strip(),
-                author_url="",  # SSR页面中没有作者链接
+                author_url="",
             )
 
-        # 原有的解析逻辑
         sel = Selector(text=html_content)
         publish_time = self._parse_publish_time(html_content)
         wechat_name = sel.xpath("string(//span[@id='profileBt'])").get("").strip() or ""
@@ -537,7 +453,7 @@ class WeChatNewsCrawler:
             .strip()
             or ""
         )
-        author_name = f"{wechat_name} - {wechat_author_url}"
+        author_name = f"{wechat_name} - {wechat_author_url}".strip("- ")
 
         return NewsMetaInfo(
             publish_time=publish_time.strip(),
@@ -546,78 +462,31 @@ class WeChatNewsCrawler:
         )
 
     def parse_content(self, html: str) -> NewsItem:
-        """解析公众号文章内容"""
-        result = NewsItem()
-        title = ""  # 初始化title变量
-
         ssr_data = _parse_ssr_data(html)
         if ssr_data:
-            title = ssr_data.get("title", "")
+            title = (ssr_data.get("title") or "").strip()
         else:
-            # 原有的解析逻辑
             selector = Selector(text=html)
-            title = selector.xpath('//h1[@id="activity-name"]/text()').get("")
+            title = (
+                selector.xpath('//h1[@id="activity-name"]/text()').get("") or ""
+            ).strip()
 
         if not title:
-            raise Exception("Failed to get title")
+            raise ValueError("Failed to get title")
 
         meta_info = self.parse_html_to_news_meta(html)
-        contents = self._content_parser.parse_html_to_news_content(html)
+        contents = list(self._content_parser.parse(html))
 
-        result.title = title.strip()
-        result.news_url = self.new_url
-        result.news_id = self.get_article_id
-        result.meta_info = meta_info
-        result.contents = contents
+        return self.compose_news_item(
+            title=title,
+            meta_info=meta_info,
+            contents=contents,
+        )
 
-        # 提取文本、图片、视频放到列表中，备用
-        result.texts = [
-            content.content for content in contents if content.type == ContentType.TEXT
-        ]
-        result.images = [
-            content.content for content in contents if content.type == ContentType.IMAGE
-        ]
-        result.videos = [
-            content.content for content in contents if content.type == ContentType.VIDEO
-        ]
-
-        return result
-
-    def save_as_json(self, news_item: NewsItem):
-        """保存公众号文章详情为json文件
-
-        Args:
-            news_item (NewsItem): 公众号文章详情
-        """
-        pathlib.Path(self.save_path).mkdir(parents=True, exist_ok=True)
-        with open(self.save_file_name, "w", encoding="utf-8") as f:
-            json.dump(news_item.model_dump(), f, ensure_ascii=False, indent=4)
-
-    def run(self):
-        """运行爬虫"""
-
-        @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
-        def retry_fetch_content():
-            html = self.fetch_content()
-            news_item = self.parse_content(html)
-            logger.info(
-                f"parse content from {self.new_url}, result: {news_item}, we will check if the content is empty."
-            )
-            if len(news_item.texts) == 0 and len(news_item.contents) == 0:
-                logger.error(
-                    f"Failed to get content: {news_item.title}, and we will retry get content ..."
-                )
-                raise Exception("Failed to get content")
-            self.save_as_json(news_item)
-            logger.info(f"Success to get content from {self.new_url}")
-
-        try:
-            retry_fetch_content()
-        except RetryError as e:
-            logger.error(
-                f"Failed to get content from {self.new_url}, error: {e}, retry times: {e.last_attempt.attempt_number}"
-            )
-            raise e
+    def validate_item(self, news_item: NewsItem) -> None:
+        super().validate_item(news_item)
+        if not news_item.title:
+            raise ValueError("Failed to get title")
 
 
 if __name__ == "__main__":
