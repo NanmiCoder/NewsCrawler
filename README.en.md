@@ -1,92 +1,84 @@
-# NewsCrawlerCollection
+<div align="center">
+
+# 🌐 NewsCrawlerCollection
+
+**Multi-Platform News & Content Crawler Suite**
+
+An open-source crawler toolkit for developers & researchers with CLI invocation, Web UI, and unified JSON output
+
+Supports 9+ mainstream platforms: WeChat, Toutiao, NetEase, Sohu, Tencent, Naver, Detik, Quora
+
+[![GitHub stars](https://img.shields.io/github/stars/NanmiCoder/NewsCrawlerCollection?style=social)](https://github.com/NanmiCoder/NewsCrawlerCollection/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/NanmiCoder/NewsCrawlerCollection?style=social)](https://github.com/NanmiCoder/NewsCrawlerCollection/network/members)
+[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-Educational-green.svg)](LICENSE)
 
 English · [中文](README.md)
 
-A multi-platform news and content crawler collection, supporting both command-line and Web UI usage modes.
+</div>
 
-![Web UI](static/images/03_webui_en.png)
+---
 
-## 🎯 Key Features
+![Web UI Interface](static/images/03_webui_en.png)
 
-- **Multi-Platform Support** - 9+ mainstream news/content platforms (WeChat, Toutiao, NetEase, Sohu, Tencent, Lenny, Naver, Detik, Quora)
-- **Dual Usage Modes** - Supports both Python API calls and Web UI operations
-- **Unified Data Format** - All platforms output standardized JSON format
-- **Modern Tooling** - Uses uv package manager for lightning-fast dependency installation
+**Ready-to-use Web UI** - Auto-detect platform, real-time progress, JSON/Markdown export
 
+---
 
+## 🎯 Why NewsCrawlerCollection?
 
+<div align="center">
 
-## 📦 Supported Platforms
+| 🌍 Multi-Platform | 🎨 Dual Modes | 📦 Standardized | ⚡ Fast Setup |
+|:---:|:---:|:---:|:---:|
+| 9+ Platforms<br/>CN/EN/KR/ID | Python API<br/>+ Web UI | Unified JSON<br/>Easy Integration | uv Manager<br/>Lightning Fast |
 
-### News/Content Platforms
-| Platform | URL Example | Status |
-|----------|-------------|--------|
-| WeChat Official Accounts | `mp.weixin.qq.com` | ✅ |
-| Toutiao | `toutiao.com` | ✅ |
-| NetEase News | `163.com` | ✅ |
-| Sohu News | `sohu.com` | ✅ |
-| Tencent News | `news.qq.com` | ✅ |
-| Lenny's Newsletter | `lennysnewsletter.com` | ✅ |
-| Naver Blog | `blog.naver.com` | ✅ |
-| Detik News | `detik.com` | ✅ |
-| Quora | `quora.com` | ✅ |
+</div>
 
-### Stock Video Platforms
-- Pexels, Pixabay, Coverr, Mixkit
+**Key Features:**
+
+- ✅ **Multi-Platform Support** - WeChat, Toutiao, NetEase, Sohu, Tencent, Lenny's Newsletter, Naver Blog, Detik News, Quora
+- ✅ **Smart Extraction** - Auto-detect platform type, extract title, content, images, videos
+- ✅ **Unified Output** - Standardized JSON format perfect for data analysis, storage, downstream processing
+- ✅ **Flexible Usage** - Python API (for automation) + Web UI (visual, no-code)
+- ✅ **Modular Design** - Decoupled crawlers, easy to extend or optimize
+- ✅ **Lightweight & Efficient** - uv-managed dependencies, fast installation, stable runtime
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Environment Setup
-
-**Install uv (Python Package Manager)**
+### Method 1: Web UI (Recommended - Ready to Use)
 
 ```bash
-# macOS / Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# 1. Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
+# or: pip install uv
 
-# Windows
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Or use pip
-pip install uv
-```
-
-**Install Project**
-
-```bash
-# Clone the repository
+# 2. Clone repository
 git clone https://github.com/NanmiCoder/NewsCrawlerCollection.git
 cd NewsCrawlerCollection
 
-```
-
-### 2. Usage Methods
-
-#### Method 1: Web UI (Recommended, Ready to Use 🎉)
-
-**Start Backend Service**
-
-```bash
+# 3. Start backend
 cd news-extractor-ui/backend
-uv sync          # Install backend dependencies
-uv run run.py    # Start backend (port 8000)
-```
+uv sync && uv run run.py
 
-**Start Frontend Service** (new terminal)
-
-```bash
+# 4. Start frontend (new terminal)
 cd news-extractor-ui/frontend
-npm install        # Install frontend dependencies
-npm run dev        # Start frontend (port 3000)
+npm install && npm run dev
+
+# 5. Visit http://localhost:3000
 ```
 
-**Access Application**
+**Web UI Features:**
+- 🎯 Paste URL, auto-detect platform type
+- 📊 Real-time extraction progress
+- 📄 JSON / Markdown dual-format export
+- 🖼️ Content preview & one-click download
 
-Open your browser and visit `http://localhost:3000` to extract news content through the visual interface.
+---
 
-#### Method 2: Python API Calls (Suitable for Automation Integration)
+### Method 2: Python API (For Automation)
 
 ```python
 from news_crawler.wechat_news import WeChatNewsCrawler
@@ -95,28 +87,59 @@ from news_crawler.toutiao_news import ToutiaoNewsCrawler
 # WeChat Official Account
 wechat_url = "https://mp.weixin.qq.com/s/xxxxxx"
 crawler = WeChatNewsCrawler(wechat_url)
-result = crawler.run()
+result = crawler.run()  # Auto-save to data/ directory
 
 # Toutiao
 toutiao_url = "https://www.toutiao.com/article/xxxxxx"
 crawler = ToutiaoNewsCrawler(toutiao_url)
 result = crawler.run()
+
+print(result)  # Returns JSON format data
 ```
 
-Run example code:
+**Run Examples:**
 ```bash
-# View complete examples
-cat call_example.py
-
-# Run examples
-uv run call_example.py
+uv run call_example.py  # View complete examples
 ```
 
 ---
 
-## 📦 Data Output Format
+## 📦 Supported Platforms
 
-All crawlers output a unified JSON format, saved in the `data/` directory:
+### News / Content Platforms
+
+| Platform | URL Example | Language | Features |
+|----------|-------------|----------|----------|
+| WeChat Official Accounts | `mp.weixin.qq.com` | Chinese | Articles & videos |
+| Toutiao | `toutiao.com` | Chinese | Rich media, videos |
+| NetEase News | `163.com` | Chinese | Image galleries |
+| Sohu News | `sohu.com` | Chinese | Multimedia content |
+| Tencent News | `news.qq.com` | Chinese | Video news |
+| Lenny's Newsletter | `lennysnewsletter.com` | English | Long-form content |
+| Naver Blog | `blog.naver.com` | Korean | Blog platform |
+| Detik News | `detik.com` | Indonesian | Southeast Asia news |
+| Quora | `quora.com` | English | Q&A content |
+
+### Stock Video Platforms
+**Pexels** · **Pixabay** · **Coverr** · **Mixkit** - High-quality free video downloads
+
+---
+
+## 💡 Use Cases
+
+```
+📰 Multi-source news aggregation / Public opinion monitoring
+📊 Media content analysis, data mining, recommendation systems
+🔬 Academic research / Data science - Cross-platform extraction
+🎓 Educational projects / Personal learning - Crawler framework
+🤖 AI training data collection / Content quality analysis
+```
+
+---
+
+## 📊 Data Output Format
+
+All crawlers output unified JSON format, saved in `data/` directory:
 
 ```json
 {
@@ -124,132 +147,127 @@ All crawlers output a unified JSON format, saved in the `data/` directory:
   "news_url": "Original URL",
   "news_id": "Article ID",
   "meta_info": {
-    "author_name": "Author",
-    "publish_time": "Publish Time"
+    "author_name": "Author Name",
+    "author_url": "Author Homepage",
+    "publish_time": "2024-10-15 10:30:00"
   },
   "contents": [
-    {"type": "text", "content": "Paragraph content", "desc": ""},
-    {"type": "image", "content": "Image URL", "desc": ""}
+    {"type": "text", "content": "Paragraph text", "desc": ""},
+    {"type": "image", "content": "https://example.com/image.jpg", "desc": "Image desc"},
+    {"type": "video", "content": "https://example.com/video.mp4", "desc": "Video desc"}
   ],
-  "texts": ["Plain text content..."],
-  "images": ["Image URLs..."],
-  "videos": ["Video URLs..."]
+  "texts": ["Paragraph 1", "Paragraph 2"],
+  "images": ["Image URL 1", "Image URL 2"],
+  "videos": ["Video URL 1"]
 }
 ```
 
----
-
-## 📁 Project Structure
-
-```
-NewsCrawlerCollection/
-│
-├── news_crawler/              # News crawler modules (Core)
-│   ├── wechat_news/          # WeChat Official Accounts
-│   ├── toutiao_news/         # Toutiao
-│   ├── netease_news/         # NetEase News
-│   ├── sohu_news/            # Sohu News
-│   ├── tencent_news/         # Tencent News
-│   ├── lennysnewsletter/     # Lenny's Newsletter
-│   ├── naver_news/           # Naver Blog
-│   ├── detik_news/           # Detik News
-│   └── quora/                # Quora
-│
-├── news-extractor-ui/         # Web UI Application
-│   ├── backend/              # FastAPI Backend
-│   │   ├── app/
-│   │   │   ├── api/          # API Routes
-│   │   │   ├── adapters/     # Crawler Adapters
-│   │   │   └── services/     # Business Logic
-│   │   ├── pyproject.toml
-│   │   └── run.py
-│   │
-│   └── frontend/             # Vue 3 Frontend
-│       ├── src/
-│       │   ├── components/   # UI Components
-│       │   ├── services/     # API Services
-│       │   └── types/        # TypeScript Types
-│       ├── package.json
-│       └── vite.config.ts
-│
-├── video_crawler/            # Video Downloader Modules
-│   ├── pexel/               # Pexels
-│   ├── pixabay/             # Pixabay
-│   ├── cover_video/         # Coverr
-│   └── mixkit_video/        # Mixkit
-│
-├── libs/                     # Utility Libraries
-│   ├── playwright_driver.py # Browser Automation
-│   └── drissionpage_driver.py
-│
-├── data/                     # Output Data Directory
-├── call_example.py          # Usage Example Code
-├── pyproject.toml           # Project Configuration (uv)
-└── README.md
-```
+**Field Descriptions:**
+- `contents` - Structured content preserving order and type (text/image/video)
+- `texts/images/videos` - Flattened lists for quick access to specific content types
+- `meta_info` - Article metadata (author, publish time, etc.)
 
 ---
 
 ## 🔧 Technology Stack
 
 ### Backend
-- **Python 3.8+**
-- **FastAPI** - Modern web framework
-- **Pydantic** - Data validation
-- **curl_cffi / requests** - HTTP requests
-- **parsel** - HTML parsing
+**Python 3.8+** · **FastAPI** · **Pydantic** · **curl_cffi** · **parsel** · **tenacity**
 
 ### Frontend
-- **Vue 3** - Progressive framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
+**Vue 3** · **TypeScript** · **Vite** · **Axios**
 
-### Tools
-- **uv** - Lightning-fast Python package manager
-- **Playwright** - Browser automation (optional)
+### Dev Tools
+**uv** (package manager) · **Playwright** (browser automation, optional)
 
----
-
-## ⚠️ Important Notes
-
-1. **Legal Compliance**
-   - For educational and research purposes only, commercial use is prohibited
-   - Comply with target websites' robots.txt and terms of service
-   - Control request frequency to avoid server stress
-
-2. **Cookie Management**
-   - Default headers may expire; use Playwright to auto-fetch when issues occur
-   - Recommend updating cookies regularly
-
-3. **Data Usage**
-   - Respect content copyrights; do not use for illegal purposes
-   - Collected data should only be used for personal learning and research
+### Project Structure
+```
+NewsCrawlerCollection/
+├── news_crawler/              # Core crawler modules
+│   ├── wechat_news/          # WeChat
+│   ├── toutiao_news/         # Toutiao
+│   ├── netease_news/         # NetEase
+│   ├── sohu_news/            # Sohu
+│   ├── tencent_news/         # Tencent
+│   └── ...                   # Other platforms
+├── news-extractor-ui/        # Web UI application
+│   ├── backend/              # FastAPI backend
+│   └── frontend/             # Vue 3 frontend
+├── video_crawler/            # Video downloaders
+├── libs/                     # Utility libraries
+└── data/                     # Output directory
+```
 
 ---
 
-## 📝 Disclaimer
+## ⚠️ Important Notice
 
-**All content in this repository is for learning and reference purposes only. Commercial use is strictly prohibited.**
+> **This project is for educational and research purposes only. Commercial use is prohibited.**
 
-- No person or organization may use the content of this repository for illegal purposes or to infringe on the legitimate rights and interests of others
-- The web scraping techniques involved in this repository are for learning and research only, and must not be used for large-scale crawling or other illegal activities on other platforms
-- This repository assumes no responsibility for any legal liability arising from the use of its content
-- By using the content of this repository, you agree to all terms and conditions of this disclaimer
+**Usage Guidelines:**
+- ✅ Personal learning, research, educational purposes only
+- ✅ Comply with target websites' robots.txt and terms of service
+- ✅ Control request frequency to avoid server stress
+- ❌ Do not use for illegal purposes or infringe on others' rights
+- ❌ No large-scale commercial crawling
+
+**Technical Notes:**
+- Some platforms may have anti-scraping mechanisms; adjust strategies accordingly
+- Default headers may expire; use Playwright to auto-fetch fresh cookies
+- Web page structure changes may cause parsing failures; feel free to submit issues
 
 ---
 
 ## 🤝 Contributing
 
-Issues and Pull Requests are welcome to improve the project!
+Issues and Pull Requests are welcome!
 
-## 📄 License
+**Contribution Areas:**
+- 🐛 Fix bugs
+- ✨ Add new platform support
+- 📝 Improve documentation
+- 🎨 Optimize UI/UX
+- ⚡ Performance optimization
 
-This project is for learning and research purposes only.
+**Submission Process:**
+1. Fork this repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
 
 ---
 
-## 🔗 Related Links
+## 📄 License
+
+This project is for learning and research purposes only. By using this project, you agree to:
+- Not use it for commercial purposes
+- Not perform large-scale crawling
+- Comply with relevant laws and target websites' terms of service
+
+This project assumes no responsibility for any legal liability arising from its use.
+
+---
+
+## 🔗 Resources
 
 - [uv - Python Package Manager](https://github.com/astral-sh/uv)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [Vue 3 Documentation](https://vuejs.org/)
+- [Playwright Documentation](https://playwright.dev/)
+
+---
+
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=NanmiCoder/NewsCrawlerCollection&type=Date)](https://star-history.com/#NanmiCoder/NewsCrawlerCollection&Date)
+
+---
+
+<div align="center">
+
+**If this project helps you, please give us a ⭐ Star!**
+
+Made with ❤️ by [NanmiCoder](https://github.com/NanmiCoder)
+
+</div>
