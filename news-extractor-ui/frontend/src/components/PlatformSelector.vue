@@ -68,8 +68,14 @@ const platforms = computed<Platform[]>(() => [
   {
     id: 'netease',
     name: t('platforms.netease.name'),
-    icon: '/logos/netease.png',
+    icon: '/logos/wangyi.webp',
     description: t('platforms.netease.description')
+  },
+  {
+    id: 'sohu',
+    name: t('platforms.sohu.name'),
+    icon: '/logos/sohu.jpg',
+    description: t('platforms.sohu.description')
   },
   {
     id: 'lenny',
