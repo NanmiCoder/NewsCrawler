@@ -1,15 +1,16 @@
 <div align="center">
 
-# 🌐 NewsCrawlerCollection
+# 🌐 NewsCrawler
 
 **多平台新闻 & 内容爬虫集合**
 
-一个面向开发者和研究者的开源爬虫工具箱,提供命令行调用、可视化 Web UI、统一 JSON 输出
 
 支持微信公众号、今日头条、网易新闻、搜狐、腾讯、Naver、Detik、Quora 等 9+ 主流平台
 
-[![GitHub stars](https://img.shields.io/github/stars/NanmiCoder/NewsCrawlerCollection?style=social)](https://github.com/NanmiCoder/NewsCrawlerCollection/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/NanmiCoder/NewsCrawlerCollection?style=social)](https://github.com/NanmiCoder/NewsCrawlerCollection/network/members)
+提供命令行调用、可视化 Web UI、统一 JSON 输出、支持MCP协议
+
+[![GitHub stars](https://img.shields.io/github/stars/NanmiCoder/NewsCrawler?style=social)](https://github.com/NanmiCoder/NewsCrawler/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/NanmiCoder/NewsCrawler?style=social)](https://github.com/NanmiCoder/NewsCrawler/network/members)
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Educational-green.svg)](LICENSE)
 
@@ -25,13 +26,14 @@
 
 ---
 
-## 🎯 为什么选择 NewsCrawlerCollection?
+## 🎯 为什么选择 NewsCrawler?
 
 <div align="center">
 
-| 🌍 多平台支持 | 🎨 双模式使用 | 📦 标准化输出 | ⚡ 快速部署 |
-|:---:|:---:|:---:|:---:|
-| 9+ 主流平台<br/>覆盖中英韩印尼 | Python API<br/>+ Web UI | 统一 JSON 格式<br/>易于集成 | uv 包管理器<br/>极速安装 |
+| 🌍 多平台支持 | 🎨 双模式使用 | 📦 标准化输出 | ⚡ 快速部署 | 🤖 MCP 支持 |
+|:---:|:---:|:---:|:---:|:---:|
+| 9+ 主流平台<br/>覆盖中英韩印尼 | Python API<br/>+ Web UI | 统一 JSON 格式<br/>易于集成 | uv 包管理器<br/>极速安装 | 集成各类AI总结文章 |
+
 
 </div>
 
@@ -40,7 +42,9 @@
 - ✅ **全平台覆盖** - 支持微信公众号、今日头条、网易、搜狐、腾讯、Lenny's Newsletter、Naver Blog、Detik News、Quora
 - ✅ **智能提取** - 自动识别平台类型,提取标题、正文、图片、视频等多媒体内容
 - ✅ **统一输出** - 所有平台输出标准化 JSON 格式,完美适配数据分析、入库、下游处理
-- ✅ **灵活使用** - 支持 Python 代码调用(适合自动化)和 Web UI 操作(可视化,零代码)
+- ✅ **灵活使用** - 支持 Python API(自动化) + Web UI(可视化) + MCP Server(AI Agent)
+- ✅ **一键部署** - Docker Compose 编排所有服务(后端 + 前端 + MCP)
+- ✅ **AI 智能体集成** - 支持 MCP 协议,可接入 Claude Desktop 等 AI 工具
 - ✅ **模块化设计** - 各平台爬虫解耦,易于扩展新平台或优化现有实现
 - ✅ **轻量高效** - 使用 uv 管理依赖,安装快速,运行稳定
 
@@ -48,7 +52,49 @@
 
 ## 🚀 快速开始
 
-### 方式一:Web UI (推荐 - 开箱即用)
+### 方式一:Docker Compose (⭐ 推荐 - 一键部署)
+
+```bash
+# 1. 安装 Docker 和 Docker Compose
+# 访问: https://docs.docker.com/get-docker/
+
+# 2. 克隆项目
+git clone https://github.com/NanmiCoder/NewsCrawler.git
+cd NewsCrawler
+
+# 3. 一键启动所有服务(后端 + 前端 + MCP)
+docker compose up -d
+
+# 4. 访问服务
+# - 前端界面: http://localhost:3000
+# - 后端 API: http://localhost:8000/docs
+# - MCP 服务: http://localhost:8765/health
+```
+
+**包含服务:**
+- ✅ **Backend 服务** (FastAPI) - 新闻提取 API
+- ✅ **Frontend 服务** (Vue 3 + Nginx) - Web UI 界面
+- ✅ **MCP 服务** - AI Agent 工具(支持 Claude Desktop)
+- ✅ **自动健康检查** - 确保所有服务正常运行
+- ✅ **数据持久化** - 提取的新闻保存在 `./data/` 目录
+
+**Docker 管理命令:**
+```bash
+# 查看日志
+docker compose logs -f
+
+# 停止服务
+docker compose down
+
+# 代码更新后重新构建
+docker compose up -d --build
+```
+
+📖 **完整文档**: [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
+
+---
+
+### 方式二:Web UI (手动部署)
 
 ```bash
 # 1. 安装 uv
@@ -56,8 +102,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
 # 或: pip install uv
 
 # 2. 克隆项目
-git clone https://github.com/NanmiCoder/NewsCrawlerCollection.git
-cd NewsCrawlerCollection
+git clone https://github.com/NanmiCoder/NewsCrawler.git
+cd NewsCrawler
 
 # 3. 启动后端
 cd news-extractor-ui/backend
@@ -78,7 +124,7 @@ npm install && npm run dev
 
 ---
 
-### 方式二:Python API (适合自动化集成)
+### 方式三:Python API (适合自动化集成)
 
 ```python
 from news_crawler.wechat_news import WeChatNewsCrawler
@@ -101,6 +147,123 @@ print(result)  # 返回 JSON 格式数据
 ```bash
 uv run call_example.py  # 查看完整示例
 ```
+
+---
+
+### 方式四:MCP Server (AI 智能体集成)
+
+**什么是 MCP?**
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io/) 是一个连接 AI 助手(如 Claude Desktop)与外部工具和数据源的标准协议。
+
+**使用场景:**
+- 🤖 让 Claude、Cursor、ChatGPT等工具通过对话直接提取新闻内容
+- 🔄 通过 AI 指令批量处理多个 URL
+- 📊 AI 驱动的内容分析工作流
+- 🚀 构建具有新闻提取能力的自定义 AI 智能体
+
+**快速配置:**
+
+```bash
+# 1. 启动 MCP 服务(推荐使用 Docker)
+docker compose up -d mcp
+
+# 2. 或手动启动
+uv run news-extractor-mcp --host 0.0.0.0 --port 8765
+
+# 3. MCP 服务运行在: http://localhost:8765/mcp
+```
+
+**AI 工具配置 (Streamable HTTP 方式):**
+
+<details>
+<summary><b>Cursor</b> (点击展开)</summary>
+
+配置文件位置: `~/.cursor/mcp.json` (全局) 或 `.cursor/mcp.json` (项目级别)
+
+```json
+{
+  "mcpServers": {
+    "newscrawler": {
+      "url": "http://127.0.0.1:8765/mcp"
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Windsurf</b> (点击展开)</summary>
+
+配置文件位置: `~/.codeium/windsurf/mcp_server_config.json`
+
+```json
+{
+  "mcpServers": {
+    "newscrawler": {
+      "url": "http://127.0.0.1:8765/mcp"
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Trae</b> (点击展开)</summary>
+
+设置 → 工具 → MCP 服务器 → 添加服务器
+
+```json
+{
+  "name": "newscrawler",
+  "url": "http://127.0.0.1:8765/mcp"
+}
+```
+</details>
+
+<details>
+<summary><b>Claude Desktop</b> (点击展开)</summary>
+
+配置文件位置:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "newscrawler": {
+      "url": "http://127.0.0.1:8765/mcp"
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>其他支持 MCP 的工具</b> (点击展开)</summary>
+
+所有支持 Streamable HTTP 传输的 MCP 客户端都可以使用以下配置:
+
+```json
+{
+  "mcpServers": {
+    "newscrawler": {
+      "url": "http://127.0.0.1:8765/mcp"
+    }
+  }
+}
+```
+
+**注意**: 如果使用 Docker 且 AI 工具运行在 Docker 外，请将 `127.0.0.1` 替换为宿主机 IP 或 `host.docker.internal`
+</details>
+
+**可用 MCP 工具:**
+- `extract_news` - 提取单篇新闻(JSON 或 Markdown 格式)
+- `batch_extract_news` - 批量提取多个 URL
+- `detect_news_platform` - 从 URL 识别平台类型
+- `list_supported_platforms` - 显示所有支持的平台
+
+
+📖 **完整 MCP 文档**: [news_extractor_mcp/README.md](news_extractor_mcp/README.md)
 
 ---
 
@@ -182,7 +345,7 @@ uv run call_example.py  # 查看完整示例
 
 ### 项目结构
 ```
-NewsCrawlerCollection/
+NewsCrawler/
 ├── news_crawler/              # 核心爬虫模块
 │   ├── wechat_news/          # 微信公众号
 │   ├── toutiao_news/         # 今日头条
@@ -190,12 +353,31 @@ NewsCrawlerCollection/
 │   ├── sohu_news/            # 搜狐新闻
 │   ├── tencent_news/         # 腾讯新闻
 │   └── ...                   # 其他平台
-├── news-extractor-ui/        # Web UI 应用
-│   ├── backend/              # FastAPI 后端
+│
+├── news_extractor_core/       # 共享核心库
+│   ├── adapters/             # 平台适配器
+│   ├── services/             # 业务逻辑
+│   └── models/               # 数据模型
+│
+├── news_extractor_backend/    # FastAPI 后端服务
+│   ├── api/                  # API 路由
+│   └── main.py               # 应用入口
+│
+├── news_extractor_mcp/        # MCP 服务器(AI Agent)
+│   ├── server.py             # MCP 实现
+│   └── README.md             # MCP 文档
+│
+├── news-extractor-ui/         # Web UI 应用
+│   ├── backend/              # (旧版) FastAPI 后端
 │   └── frontend/             # Vue 3 前端
-├── video_crawler/            # 视频素材下载器
-├── libs/                     # 工具库
-└── data/                     # 输出数据目录
+│
+├── video_crawler/             # 视频素材下载器
+├── libs/                      # 工具库
+├── data/                      # 输出数据目录
+│
+├── Dockerfile                 # 多阶段 Docker 构建
+├── docker-compose.yml         # 服务编排配置
+└── DOCKER_DEPLOYMENT.md       # Docker 部署指南
 ```
 
 ---
@@ -260,7 +442,7 @@ NewsCrawlerCollection/
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=NanmiCoder/NewsCrawlerCollection&type=Date)](https://star-history.com/#NanmiCoder/NewsCrawlerCollection&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=NanmiCoder/NewsCrawler&type=Date)](https://star-history.com/#NanmiCoder/NewsCrawler&Date)
 
 ---
 

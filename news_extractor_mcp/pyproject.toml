@@ -1,0 +1,29 @@
+[project]
+name = "news-extractor-mcp"
+version = "0.1.0"
+description = "MCP Server for News Extraction - AI Agent Tools"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0",
+    "anyio>=4.4",
+    "click>=8.1",
+    "starlette>=0.37",
+    "uvicorn>=0.29",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["news_extractor_mcp"]
+
+[project.scripts]
+news-extractor-mcp = "news_extractor_mcp.server:main"
+
+[tool.uv]
+dev-dependencies = []
+
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true

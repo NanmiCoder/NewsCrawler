@@ -1,0 +1,84 @@
+# ================================
+# .dockerignore
+# Exclude unnecessary files from Docker build context
+# ================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+ENV/
+env/
+
+# uv
+.venv/
+uv.lock.bak
+
+# Data and outputs
+data/
+*.json
+*.csv
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+# NOTE: Keep README.md because pyproject.toml declares it as project readme
+# *.md  # Don't exclude all .md files
+docs/
+CONTRIBUTING.md
+CHANGELOG.md
+LICENSE.md
+DOCKER_DEPLOYMENT.md
+WECHAT_CRAWLER_ANALYSIS.md
+MCP_INTEGRATION_SUMMARY.md
+summary.md
+
+# Node.js (frontend)
+news-extractor-ui/frontend/node_modules/
+news-extractor-ui/frontend/dist/
+news-extractor-ui/frontend/.vite/
+# news-extractor-ui/frontend/package-lock.json  # Keep for npm ci
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+tests/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+.cache/

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NewsCrawlerCollection is a multi-platform news and content crawler collection designed for educational purposes only. It supports:
+NewsCrawler is a multi-platform news and content crawler collection designed for educational purposes only. It supports:
 - **News Crawlers**: 6+ platforms (WeChat, Toutiao, Lenny's Newsletter, Naver Blog, Detik News, Quora)
 - **Video Downloaders**: Stock media platforms (Pexels, Pixabay, Coverr, Mixkit)
 - **Web UI**: Modern FastAPI + Vue 3 interface for easy extraction
@@ -14,7 +14,7 @@ NewsCrawlerCollection is a multi-platform news and content crawler collection de
 ## Project Structure (Updated)
 
 ```
-NewsCrawlerCollection/
+NewsCrawler/
 ├── news_crawler/              # Consolidated crawler modules (NEW)
 │   ├── wechat_news/          # WeChat crawler
 │   ├── toutiao_news/         # Toutiao crawler
@@ -400,6 +400,22 @@ This repository is for educational and research purposes only. Users must:
 - Understand that responsibility for misuse lies with the user
 
 ## Recent Changes
+
+### 2024-10-18 - MCP Integration
+- **🆕 MCP Server** (`news_extractor_mcp/`): Added Model Context Protocol server for AI Agent integration
+  - 4 tools: `extract_news`, `detect_news_platform`, `list_supported_platforms`, `batch_extract_news`
+  - 1 resource: `platforms://list`
+  - Full Claude Desktop integration support
+- **🔧 Code Refactoring**: Extracted shared code to `news_extractor_core_pkg/`
+  - Moved adapters, services, and models to core package
+  - Backend now depends on core package (cleaner architecture)
+  - Eliminated code duplication between Web UI and MCP Server
+- **📊 New Architecture**: Three-tier structure
+  - `news_crawler/` - Original crawler implementations
+  - `news_extractor_core_pkg/` - Shared business logic
+  - `news_extractor_mcp/` - MCP server for AI agents
+  - `news-extractor-ui/backend/` - Web API (simplified)
+- **📝 Documentation**: Added `MCP_INTEGRATION_SUMMARY.md` and `news_extractor_mcp/README.md`
 
 ### 2024-10-17
 - Restructured crawler modules into `news_crawler/` directory
