@@ -103,15 +103,17 @@ curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
 git clone https://github.com/NanmiCoder/NewsCrawler.git
 cd NewsCrawler
 
-# 3. Start backend
-cd news-extractor-ui/backend
-uv sync && uv run run.py
+# 3. Install all dependencies (uv workspace mode)
+uv sync
 
-# 4. Start frontend (new terminal)
+# 4. Start backend (from project root)
+uv run news-extractor-backend --host 0.0.0.0 --port 8000
+
+# 5. Start frontend (new terminal)
 cd news-extractor-ui/frontend
 npm install && npm run dev
 
-# 5. Visit http://localhost:3000
+# 6. Visit http://localhost:3000
 ```
 
 **Web UI Features:**
@@ -119,6 +121,8 @@ npm install && npm run dev
 - 📊 Real-time extraction progress
 - 📄 JSON / Markdown dual-format export
 - 🖼️ Content preview & one-click download
+
+📖 **Detailed Deployment Guide**: [MANUAL_DEPLOYMENT.md](MANUAL_DEPLOYMENT.md)
 
 ---
 
@@ -165,7 +169,11 @@ uv run call_example.py  # View complete examples
 # 1. Start MCP Server (Recommended: Docker)
 docker compose up -d mcp
 
-# 2. Or start manually
+# 2. Or start manually (from project root)
+# First install dependencies
+uv sync
+
+# Start MCP server
 uv run news-extractor-mcp --host 0.0.0.0 --port 8765
 
 # 3. MCP Server running at: http://localhost:8765/mcp
@@ -360,30 +368,33 @@ NewsCrawler/
 │   ├── tencent_news/         # Tencent
 │   └── ...                   # Other platforms
 │
-├── news_extractor_core/       # Shared core library
+├── news_extractor_core/       # Shared core library (uv workspace member)
 │   ├── adapters/             # Platform adapters
 │   ├── services/             # Business logic
 │   └── models/               # Data models
 │
-├── news_extractor_backend/    # FastAPI backend service
+├── news_extractor_backend/    # FastAPI backend service (uv workspace member)
 │   ├── api/                  # API routes
-│   └── main.py               # Application entry
+│   ├── main.py               # Application entry
+│   └── cli.py                # CLI entry point
 │
-├── news_extractor_mcp/        # MCP server for AI agents
+├── news_extractor_mcp/        # MCP server (uv workspace member)
 │   ├── server.py             # MCP implementation
 │   └── README.md             # MCP documentation
 │
 ├── news-extractor-ui/         # Web UI application
-│   ├── backend/              # (Legacy) FastAPI backend
 │   └── frontend/             # Vue 3 frontend
 │
 ├── video_crawler/             # Video downloaders
 ├── libs/                      # Utility libraries
 ├── data/                      # Output directory
 │
+├── pyproject.toml             # uv workspace root config
+├── uv.lock                    # Dependency lock file
 ├── Dockerfile                 # Multi-stage Docker build
 ├── docker-compose.yml         # Service orchestration
-└── DOCKER_DEPLOYMENT.md       # Docker guide
+├── DOCKER_DEPLOYMENT.md       # Docker deployment guide
+└── MANUAL_DEPLOYMENT.md       # Manual deployment guide
 ```
 
 ---

@@ -105,15 +105,17 @@ curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
 git clone https://github.com/NanmiCoder/NewsCrawler.git
 cd NewsCrawler
 
-# 3. 启动后端
-cd news-extractor-ui/backend
-uv sync && uv run run.py
+# 3. 安装所有依赖 (uv workspace 模式)
+uv sync
 
-# 4. 启动前端 (新终端)
+# 4. 启动后端 (在项目根目录)
+uv run news-extractor-backend --host 0.0.0.0 --port 8000
+
+# 5. 启动前端 (新终端)
 cd news-extractor-ui/frontend
 npm install && npm run dev
 
-# 5. 访问 http://localhost:3000
+# 6. 访问 http://localhost:3000
 ```
 
 **Web UI 功能:**
@@ -121,6 +123,7 @@ npm install && npm run dev
 - 📊 实时显示提取进度
 - 📄 支持 JSON / Markdown 双格式导出
 - 🖼️ 内容预览与一键下载
+
 
 ---
 
@@ -167,7 +170,11 @@ uv run call_example.py  # 查看完整示例
 # 1. 启动 MCP 服务(推荐使用 Docker)
 docker compose up -d mcp
 
-# 2. 或手动启动
+# 2. 或手动启动 (在项目根目录)
+# 首先安装依赖
+uv sync
+
+# 启动 MCP 服务器
 uv run news-extractor-mcp --host 0.0.0.0 --port 8765
 
 # 3. MCP 服务运行在: http://localhost:8765/mcp
@@ -354,30 +361,33 @@ NewsCrawler/
 │   ├── tencent_news/         # 腾讯新闻
 │   └── ...                   # 其他平台
 │
-├── news_extractor_core/       # 共享核心库
+├── news_extractor_core/       # 共享核心库 (uv workspace 成员)
 │   ├── adapters/             # 平台适配器
 │   ├── services/             # 业务逻辑
 │   └── models/               # 数据模型
 │
-├── news_extractor_backend/    # FastAPI 后端服务
+├── news_extractor_backend/    # FastAPI 后端服务 (uv workspace 成员)
 │   ├── api/                  # API 路由
-│   └── main.py               # 应用入口
+│   ├── main.py               # 应用入口
+│   └── cli.py                # 命令行入口
 │
-├── news_extractor_mcp/        # MCP 服务器(AI Agent)
+├── news_extractor_mcp/        # MCP 服务器 (uv workspace 成员)
 │   ├── server.py             # MCP 实现
 │   └── README.md             # MCP 文档
 │
 ├── news-extractor-ui/         # Web UI 应用
-│   ├── backend/              # (旧版) FastAPI 后端
 │   └── frontend/             # Vue 3 前端
 │
 ├── video_crawler/             # 视频素材下载器
 ├── libs/                      # 工具库
 ├── data/                      # 输出数据目录
 │
+├── pyproject.toml             # uv workspace 根配置
+├── uv.lock                    # 依赖锁文件
 ├── Dockerfile                 # 多阶段 Docker 构建
 ├── docker-compose.yml         # 服务编排配置
-└── DOCKER_DEPLOYMENT.md       # Docker 部署指南
+├── DOCKER_DEPLOYMENT.md       # Docker 部署指南
+└── MANUAL_DEPLOYMENT.md       # 手动部署指南
 ```
 
 ---
