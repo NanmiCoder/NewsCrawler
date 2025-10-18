@@ -1,0 +1,87 @@
+services:
+  # ================================
+  # Backend Service (FastAPI)
+  # ================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    container_name: news-extractor-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data  # Persist extracted news data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - news-extractor-network
+
+  # ================================
+  # MCP Service (AI Agent Tools)
+  # ================================
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mcp
+    container_name: news-extractor-mcp
+    ports:
+      - "8765:8765"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data  # Share data volume with backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8765/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - news-extractor-network
+
+  # ================================
+  # Frontend Service (Vue 3 + Nginx)
+  # ================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    container_name: news-extractor-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - news-extractor-network
+
+# ================================
+# Networks
+# ================================
+networks:
+  news-extractor-network:
+    driver: bridge
+
+# ================================
+# Volumes
+# ================================
+volumes:
+  data:
+    driver: local
