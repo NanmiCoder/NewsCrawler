@@ -66,7 +66,7 @@ docker compose up -d
 # 4. Access services
 # - Frontend UI: http://localhost:3000
 # - Backend API: http://localhost:8000/docs
-# - MCP Server: http://localhost:8765/health
+# - MCP Server: http://localhost:8765/mcp
 ```
 
 **What's included:**

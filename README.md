@@ -68,7 +68,7 @@ docker compose up -d
 # 4. 访问服务
 # - 前端界面: http://localhost:3000
 # - 后端 API: http://localhost:8000/docs
-# - MCP 服务: http://localhost:8765/health
+# - MCP 服务: http://localhost:8765/mcp
 ```
 
 **包含服务:**
