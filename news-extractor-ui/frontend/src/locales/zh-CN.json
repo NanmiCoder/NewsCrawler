@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "智能新闻提取器",
-    "subtitle": "一键提取全网新闻内容，支持微信、头条、网易、搜狐、腾讯、Lenny、Naver、Detik、Quora等9个主流平台",
+    "subtitle": "一键提取全网新闻内容，支持微信、头条、网易、搜狐、腾讯、Lenny、Naver、Detik、Quora、BBC等10个主流平台",
     "stats": {
       "platforms": "支持平台",
       "accuracy": "准确率",
@@ -47,6 +47,10 @@
     "quora": {
       "name": "Quora",
       "description": "提取 Quora 问答内容"
+    },
+    "bbc": {
+      "name": "BBC News",
+      "description": "提取 BBC 新闻内容"
     }
   },
   "input": {
@@ -62,7 +66,8 @@
       "naver": "粘贴或输入 Naver 博客链接，例如: https://blog.naver.com/username/223618759620",
       "detik": "粘贴或输入 Detik News 链接，例如: https://news.detik.com/berita/d-7123456/news-title",
       "quora": "粘贴或输入 Quora 回答链接，例如: https://www.quora.com/question/answers/123456789",
-      "default": "粘贴或输入新闻链接，支持微信、头条、Lenny、Naver、Detik、Quora"
+      "bbc": "粘贴或输入 BBC News 链接，例如: https://www.bbc.com/news/articles/c797qlx93j0o",
+      "default": "粘贴或输入新闻链接，支持微信、头条、Lenny、Naver、Detik、Quora、BBC"
     },
     "selectPlatform": "请先选择一个平台",
     "extractButton": "开始提取",

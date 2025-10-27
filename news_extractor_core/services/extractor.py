@@ -14,6 +14,7 @@ from ..adapters.detik import DetikAdapter
 from ..adapters.lenny import LennyAdapter
 from ..adapters.naver import NaverAdapter
 from ..adapters.quora import QuoraAdapter
+from ..adapters.bbc import BBCAdapter
 from .detector import detect_platform
 
 
@@ -28,6 +29,7 @@ ADAPTERS = {
     "lenny": LennyAdapter(),
     "naver": NaverAdapter(),
     "quora": QuoraAdapter(),
+    "bbc": BBCAdapter(),
 }
 
 

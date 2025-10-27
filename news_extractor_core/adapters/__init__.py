@@ -12,6 +12,7 @@ from .detik import DetikAdapter
 from .lenny import LennyAdapter
 from .naver import NaverAdapter
 from .quora import QuoraAdapter
+from .bbc import BBCAdapter
 
 __all__ = [
     "CrawlerAdapter",
@@ -24,4 +25,5 @@ __all__ = [
     "LennyAdapter",
     "NaverAdapter",
     "QuoraAdapter",
+    "BBCAdapter",
 ]

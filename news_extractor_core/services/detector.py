@@ -15,7 +15,8 @@ PLATFORM_PATTERNS = {
     "detik": r"https?://news\.detik\.com/",
     "naver": r"https?://.*\.naver\.com/",
     "lenny": r"https?://www\.lennysnewsletter\.com/",
-    "quora": r"https?://.*\.quora\.com/"
+    "quora": r"https?://.*\.quora\.com/",
+    "bbc": r"https?://www\.bbc\.com/news/articles/"
 }
 
 
@@ -46,5 +47,6 @@ def get_supported_platforms() -> list[dict]:
         {"id": "detik", "name": "Detik News", "icon": "🌏"},
         {"id": "naver", "name": "Naver News", "icon": "🇰🇷"},
         {"id": "lenny", "name": "Lenny's Newsletter", "icon": "📮"},
-        {"id": "quora", "name": "Quora", "icon": "❓"}
+        {"id": "quora", "name": "Quora", "icon": "❓"},
+        {"id": "bbc", "name": "BBC News", "icon": "🇬🇧"}
     ]

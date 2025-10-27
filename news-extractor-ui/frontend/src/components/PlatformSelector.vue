@@ -106,6 +106,12 @@ const platforms = computed<Platform[]>(() => [
     name: t('platforms.quora.name'),
     icon: '/logos/Quora.png',
     description: t('platforms.quora.description')
+  },
+  {
+    id: 'bbc',
+    name: t('platforms.bbc.name'),
+    icon: '/logos/bbc.png',
+    description: t('platforms.bbc.description')
   }
 ])
 
