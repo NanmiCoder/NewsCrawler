@@ -5,6 +5,7 @@
 
 import json
 import logging
+from datetime import datetime
 import re
 from typing import List, Optional
 
@@ -63,8 +64,79 @@ def _convert_js_obj_to_json(js_obj_str: str) -> str:
             return js_obj_str
 
 
+def _js_decode(s: str) -> str:
+    """Python版本的JsDecode函数，用于解码微信公众号的转义字符
+
+    Args:
+        s (str): 需要解码的字符串
+
+    Returns:
+        str: 解码后的字符串
+    """
+    if not s:
+        return s
+    return (s.replace('\\x5c', '\\')
+             .replace('\\x0d', '\r')
+             .replace('\\x22', '"')
+             .replace('\\x26', '&')
+             .replace('\\x27', "'")
+             .replace('\\x3c', '<')
+             .replace('\\x3e', '>')
+             .replace('\\x0a', '\n'))
+
+
+def _parse_cgi_data_new(html: str) -> Optional[dict]:
+    """解析新版window.cgiDataNew数据（2024年微信公众号更新后的格式）
+
+    Args:
+        html (str): 页面HTML内容
+
+    Returns:
+        Optional[dict]: 解析后的数据，解析失败返回None
+    """
+    if "window.cgiDataNew" not in html:
+        return None
+
+    # 提取window.cgiDataNew赋值部分
+    pattern = r'window\.cgiDataNew\s*=\s*({[\s\S]*?});[\s\n]*}\s*catch'
+    match = re.search(pattern, html)
+    if not match:
+        return None
+
+    try:
+        js_obj_str = match.group(1)
+
+        # 步骤1: 处理JsDecode函数调用
+        # 匹配 JsDecode('...') 其中内部字符串可能包含转义字符
+        def replace_jsdecode(match_obj):
+            encoded_str = match_obj.group(1)
+            # 处理JavaScript字符串转义：先将\\' 转为 '，\\\\ 转为 \\
+            encoded_str = encoded_str.replace("\\'", "'").replace("\\\\", "\\")
+            # 使用JsDecode解码
+            decoded = _js_decode(encoded_str)
+            # 返回JSON格式的字符串（带引号，并转义特殊字符）
+            return json.dumps(decoded, ensure_ascii=False)
+
+        js_obj_str = re.sub(
+            r"JsDecode\('((?:[^'\\]|\\.)*)'\)",
+            replace_jsdecode,
+            js_obj_str
+        )
+
+        # 步骤2: 处理 'xxx' * 1 这种字符串转数字的JavaScript表达式
+        js_obj_str = re.sub(r"'(\d+)'\s*\*\s*1", r'\1', js_obj_str)
+
+        # 步骤3: 使用demjson3解析JavaScript对象为Python字典
+        parsed_data = demjson3.decode(js_obj_str)
+        return parsed_data
+
+    except Exception as e:
+        logger.error(f"Failed to parse cgiDataNew: {str(e)}")
+        return None
+
+
 def _parse_ssr_data(html: str) -> Optional[dict]:
-    """解析SSR数据
+    """解析SSR数据（兼容旧版__QMTPL_SSR_DATA__和新版cgiDataNew）
 
     Args:
         html (str): 页面HTML内容
@@ -72,6 +144,12 @@ def _parse_ssr_data(html: str) -> Optional[dict]:
     Returns:
         Optional[dict]: 解析后的SSR数据，解析失败返回None
     """
+    # 优先尝试新版格式
+    cgi_data = _parse_cgi_data_new(html)
+    if cgi_data:
+        return cgi_data
+
+    # 回退到旧版格式
     if "window.__QMTPL_SSR_DATA__" not in html:
         return None
 
@@ -137,16 +215,13 @@ class WechatContentParser:
             List[ContentItem]: 公众号章内容，每个段落作为独立的ContentItem
         """
         self._contents = []
-        # 检查是否是SSR渲染的页面
-        if "window.__QMTPL_SSR_DATA__" in html_content:
-            return self.parse_ssr_content(html_content)
-
-        selector = Selector(text=html_content)
-
+        selector = Selector(text=html_content)     
         content_node = selector.xpath('//div[@id="js_content"]')
-        if not content_node:
-            return self._contents
-
+        
+        # 检查是否是SSR渲染的页面, 如果通过xpath没有找到js_content节点, 则认为不是SSR渲染的页面, 则调用parse_ssr_content方法
+        if not content_node: 
+            return self.parse_ssr_content(html_content)
+           
         # 处理所有直接子节点
         for node in content_node.xpath("./*"):
             self._process_content_node(node)
@@ -362,13 +437,27 @@ class WechatContentParser:
         """
         # 提取SSR数据
         contents = []
-        contents.extend(_parse_ssr_image_list(html_content))
         ssr_data_dict = _parse_ssr_data(html_content)
 
         if ssr_data_dict:
             try:
+                # 方案1：从结构化数据中提取图片列表（新版cgiDataNew格式）
+                picture_list = ssr_data_dict.get("picture_page_info_list", [])
+                if picture_list:
+                    for pic_info in picture_list:
+                        cdn_url = pic_info.get("cdn_url", "")
+                        if cdn_url:
+                            # 处理&amp;转义
+                            cdn_url = cdn_url.replace("&amp;", "&")
+                            contents.append(ContentItem(type=ContentType.IMAGE, content=cdn_url))
+
+                # 方案2：从HTML中提取图片列表（旧版window.picture_page_info_list格式）
+                if not picture_list:
+                    contents.extend(_parse_ssr_image_list(html_content))
+
+                # 提取文本内容
                 # 有的xhs风格的公众号页面，没有desc，只有title，要兼容一下。
-                desc = ssr_data_dict.get("desc")
+                desc = ssr_data_dict.get("desc") or ssr_data_dict.get("content_noencode")
                 title = ssr_data_dict.get("title")
                 final_desc = desc or title
                 if final_desc:
@@ -381,7 +470,7 @@ class WechatContentParser:
                                 type=ContentType.TEXT, content=desc_item.strip()
                             )
                         )
-            except json.JSONDecodeError as e:
+            except (json.JSONDecodeError, Exception) as e:
                 logger.error(f"Failed to parse SSR data: {str(e)}")
 
         return contents
@@ -431,10 +520,19 @@ class WeChatNewsCrawler(BaseNewsCrawler):
         ssr_data = _parse_ssr_data(html_content)
         if ssr_data:
             author_name = ssr_data.get("nick_name", "")
-            create_time_match = re.search(
-                r"var\s+createTime\s*=\s*'([^']+)'\s*;", html_content
-            )
-            publish_time = create_time_match.group(1) if create_time_match else ""
+
+            # 从SSR数据中获取发布时间
+            # 优先使用create_time（已格式化），如果没有则从ori_send_time转换
+            publish_time = ssr_data.get("create_time", "")
+            if not publish_time:
+                ori_send_time = ssr_data.get("ori_send_time")
+                if ori_send_time:
+                    # ori_send_time是Unix时间戳，转换为格式化时间
+                    try:
+                        dt = datetime.fromtimestamp(int(ori_send_time))
+                        publish_time = dt.strftime("%Y-%m-%d %H:%M")
+                    except (ValueError, TypeError):
+                        publish_time = ""
 
             return NewsMetaInfo(
                 publish_time=publish_time.strip(),
@@ -463,7 +561,7 @@ class WeChatNewsCrawler(BaseNewsCrawler):
 
     def parse_content(self, html: str) -> NewsItem:
         ssr_data = _parse_ssr_data(html)
-        if ssr_data:
+        if ssr_data:            
             title = (ssr_data.get("title") or "").strip()
         else:
             selector = Selector(text=html)
@@ -475,7 +573,7 @@ class WeChatNewsCrawler(BaseNewsCrawler):
             raise ValueError("Failed to get title")
 
         meta_info = self.parse_html_to_news_meta(html)
-        contents = list(self._content_parser.parse(html))
+        contents = list[ContentItem](self._content_parser.parse(html))
 
         return self.compose_news_item(
             title=title,
@@ -484,7 +582,7 @@ class WeChatNewsCrawler(BaseNewsCrawler):
         )
 
     def validate_item(self, news_item: NewsItem) -> None:
-        super().validate_item(news_item)
+        super().validate_item(news_item)        
         if not news_item.title:
             raise ValueError("Failed to get title")
 
@@ -504,14 +602,14 @@ if __name__ == "__main__":
     article_url10 = "https://mp.weixin.qq.com/s/deS-7QqTWyat-l5Ex39ZDA"
     for article_url in [
         article_url1,
-        article_url2,
-        article_url3,
-        article_url4,
-        article_url5,
-        article_url6,
-        article_url7,
-        article_url8,
-        article_url9,
+        # article_url2,
+        # article_url3,
+        # article_url4,
+        # article_url5,
+        # article_url6,
+        # article_url7,
+        # article_url8,
+        # article_url9,
     ]:
         crawler = WeChatNewsCrawler(article_url, save_path="data/")
         crawler.run()
