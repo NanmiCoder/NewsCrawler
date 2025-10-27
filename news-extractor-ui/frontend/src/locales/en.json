@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Smart News Extractor",
-    "subtitle": "One-click extraction of news content from the web. Supports 10 mainstream platforms including WeChat, Toutiao, NetEase, Sohu, Tencent, Lenny, Naver, Detik, Quora, and BBC",
+    "subtitle": "One-click extraction of news content from the web. Supports 11 mainstream platforms including WeChat, Toutiao, NetEase, Sohu, Tencent, Lenny, Naver, Detik, Quora, BBC, and CNN",
     "stats": {
       "platforms": "Platforms",
       "accuracy": "Accuracy",
@@ -51,6 +51,10 @@
     "bbc": {
       "name": "BBC News",
       "description": "Extract BBC news content"
+    },
+    "cnn": {
+      "name": "CNN News",
+      "description": "Extract CNN news content"
     }
   },
   "input": {
@@ -67,7 +71,8 @@
       "detik": "Paste or enter Detik News link, e.g.: https://news.detik.com/berita/d-7123456/news-title",
       "quora": "Paste or enter Quora answer link, e.g.: https://www.quora.com/question/answers/123456789",
       "bbc": "Paste or enter BBC News link, e.g.: https://www.bbc.com/news/articles/c797qlx93j0o",
-      "default": "Paste or enter news link, supports WeChat, Toutiao, Lenny, Naver, Detik, Quora, BBC"
+      "cnn": "Paste or enter CNN News link, e.g.: https://edition.cnn.com/2025/10/27/uk/sami-hamdi-detained-ice-intl",
+      "default": "Paste or enter news link, supports WeChat, Toutiao, Lenny, Naver, Detik, Quora, BBC, CNN"
     },
     "selectPlatform": "Please select a platform first",
     "extractButton": "Start Extraction",
