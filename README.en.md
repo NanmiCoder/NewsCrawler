@@ -6,7 +6,7 @@
 
 An open-source crawler toolkit for developers & researchers with CLI invocation, Web UI, and unified JSON output, MCP support
 
-Supports 9+ mainstream platforms: WeChat, Toutiao, NetEase, Sohu, Tencent, Naver, Detik, Quora
+Supports 11 mainstream platforms: WeChat, Toutiao, NetEase, Sohu, Tencent, Naver, Detik, Quora, BBC, CNN
 
 [![GitHub stars](https://img.shields.io/github/stars/NanmiCoder/NewsCrawler?style=social)](https://github.com/NanmiCoder/NewsCrawler/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/NanmiCoder/NewsCrawler?style=social)](https://github.com/NanmiCoder/NewsCrawler/network/members)
@@ -31,13 +31,13 @@ English · [中文](README.md)
 
 | 🌍 Multi-Platform | 🎨 Dual Modes | 📦 Standardized | ⚡ Fast Setup |
 |:---:|:---:|:---:|:---:|
-| 9+ Platforms<br/>CN/EN/KR/ID | Python API<br/>+ Web UI | Unified JSON<br/>Easy Integration | uv Manager<br/>Lightning Fast |
+| 11 Platforms<br/>CN/EN/KR/ID | Python API<br/>+ Web UI | Unified JSON<br/>Easy Integration | uv Manager<br/>Lightning Fast |
 
 </div>
 
 **Key Features:**
 
-- ✅ **Multi-Platform Support** - WeChat, Toutiao, NetEase, Sohu, Tencent, Lenny's Newsletter, Naver Blog, Detik News, Quora
+- ✅ **Multi-Platform Support** - WeChat, Toutiao, NetEase, Sohu, Tencent, Lenny's Newsletter, Naver Blog, Detik News, Quora, BBC News, CNN News
 - ✅ **Smart Extraction** - Auto-detect platform type, extract title, content, images, videos
 - ✅ **Unified Output** - Standardized JSON format perfect for data analysis, storage, downstream processing
 - ✅ **Flexible Usage** - Python API (for automation) + Web UI (visual, no-code) + MCP Server (AI Agents)

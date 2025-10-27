@@ -5,7 +5,7 @@
 **多平台新闻 & 内容爬虫集合**
 
 
-支持微信公众号、今日头条、网易新闻、搜狐、腾讯、Naver、Detik、Quora 等 9+ 主流平台
+支持微信公众号、今日头条、网易新闻、搜狐、腾讯、Naver、Detik、Quora、BBC、CNN 等 11 个主流平台
 
 提供命令行调用、可视化 Web UI、统一 JSON 输出、支持MCP协议
 
@@ -32,14 +32,14 @@
 
 | 🌍 多平台支持 | 🎨 双模式使用 | 📦 标准化输出 | ⚡ 快速部署 | 🤖 MCP 支持 |
 |:---:|:---:|:---:|:---:|:---:|
-| 9+ 主流平台<br/>覆盖中英韩印尼 | Python API<br/>+ Web UI | 统一 JSON 格式<br/>易于集成 | uv 包管理器<br/>极速安装 | 集成各类AI总结文章 |
+| 11 个主流平台<br/>覆盖中英韩印尼 | Python API<br/>+ Web UI | 统一 JSON 格式<br/>易于集成 | uv 包管理器<br/>极速安装 | 集成各类AI总结文章 |
 
 
 </div>
 
 **核心特性:**
 
-- ✅ **全平台覆盖** - 支持微信公众号、今日头条、网易、搜狐、腾讯、Lenny's Newsletter、Naver Blog、Detik News、Quora
+- ✅ **全平台覆盖** - 支持微信公众号、今日头条、网易、搜狐、腾讯、Lenny's Newsletter、Naver Blog、Detik News、Quora、BBC News、CNN News
 - ✅ **智能提取** - 自动识别平台类型,提取标题、正文、图片、视频等多媒体内容
 - ✅ **统一输出** - 所有平台输出标准化 JSON 格式,完美适配数据分析、入库、下游处理
 - ✅ **灵活使用** - 支持 Python API(自动化) + Web UI(可视化) + MCP Server(AI Agent)
