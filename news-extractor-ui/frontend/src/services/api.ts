@@ -1,6 +1,6 @@
 // API 服务
 import axios from 'axios'
-import type { ExtractRequest, ExtractResponse, Platform } from '@/types'
+import type { ExtractRequest, ExtractResponse, Platform, AgentRequest, AgentResponse, LLMProviderInfo, TaskInfo } from '@/types'
 
 const api = axios.create({
   baseURL: '/api',
@@ -44,6 +44,19 @@ export const getPlatforms = (): Promise<{ status: string; platforms: Platform[] 
 // 健康检查
 export const healthCheck = (): Promise<{ status: string; timestamp: string }> => {
   return api.get('/health')
+}
+
+// AI Agent APIs
+export const processWithAgent = (data: AgentRequest): Promise<AgentResponse> => {
+  return api.post('/agent/process', data)
+}
+
+export const getAgentProviders = (): Promise<{ status: string; providers: LLMProviderInfo[] }> => {
+  return api.get('/agent/providers')
+}
+
+export const getAgentTasks = (): Promise<{ status: string; tasks: TaskInfo[] }> => {
+  return api.get('/agent/tasks')
 }
 
 export default api

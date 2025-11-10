@@ -134,6 +134,18 @@
           <p>{{ t('results.content.noImages') }}</p>
         </div>
       </div>
+
+      <!-- AI Agent视图 -->
+      <div v-else-if="activeTab === 'ai-agent'" class="ai-agent-view">
+        <AIAgentConfig
+          @config-saved="handleConfigSaved"
+        />
+        <div class="agent-spacer"></div>
+        <AIAgentProcessor
+          :llm-config="llmConfig"
+          :news-data="result.data"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -141,10 +153,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { ExtractResponse } from '@/types'
+import type { ExtractResponse, LLMConfig } from '@/types'
 import hljs from 'highlight.js/lib/core'
 import json from 'highlight.js/lib/languages/json'
 import 'highlight.js/styles/github-dark.css'
+import AIAgentConfig from './AIAgentConfig.vue'
+import AIAgentProcessor from './AIAgentProcessor.vue'
 
 // 注册 JSON 语言
 hljs.registerLanguage('json', json)
@@ -156,12 +170,25 @@ const props = defineProps<{
 }>()
 
 const activeTab = ref('preview')
+const llmConfig = ref<LLMConfig | undefined>(undefined)
+
+const handleConfigSaved = (config: LLMConfig) => {
+  llmConfig.value = config
+  // Auto-scroll to processor
+  setTimeout(() => {
+    const processor = document.querySelector('.ai-processor')
+    if (processor) {
+      processor.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, 100)
+}
 
 const tabs = computed(() => [
   { id: 'preview', label: t('results.tabs.preview'), icon: '👁️' },
   { id: 'markdown', label: 'Markdown', icon: '📝' },
   { id: 'json', label: 'JSON', icon: '{ }' },
-  { id: 'images', label: t('results.tabs.images'), icon: '🖼️' }
+  { id: 'images', label: t('results.tabs.images'), icon: '🖼️' },
+  { id: 'ai-agent', label: 'AI Agent', icon: '🤖' }
 ])
 
 const platformNames = computed(() => {
@@ -641,6 +668,18 @@ const handleImageError = (event: Event) => {
   font-size: 3rem;
   display: block;
   margin-bottom: 1rem;
+}
+
+.ai-agent-view {
+  animation: fadeIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.agent-spacer {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-color), transparent);
 }
 
 @keyframes fadeIn {

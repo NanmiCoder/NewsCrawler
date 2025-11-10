@@ -4,7 +4,7 @@ FastAPI 主应用
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .api import extract, proxy
+from .api import extract, proxy, ai_agent
 
 # 创建 FastAPI 应用
 app = FastAPI(
@@ -25,6 +25,7 @@ app.add_middleware(
 # 注册路由
 app.include_router(extract.router, prefix="/api", tags=["extract"])
 app.include_router(proxy.router, prefix="/api/proxy", tags=["proxy"])
+app.include_router(ai_agent.router, prefix="/api/agent", tags=["ai_agent"])
 
 
 @app.get("/")

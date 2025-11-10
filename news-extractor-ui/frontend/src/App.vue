@@ -11,7 +11,7 @@
             <span class="badge-icon">✨</span>
             <span>AI-Powered Content Extraction</span>
           </div>
-          <span class="coming-soon-tag">{{ t('common.comingSoon') }}</span>
+          <span class="now-available-tag">🎉 Now Available!</span>
         </div>
         <h1 class="hero-title">
           <span class="title-gradient">{{ t('app.title') }}</span>
@@ -243,17 +243,17 @@ const showAbout = () => {
   font-size: 1.1rem;
 }
 
-.coming-soon-tag {
+.now-available-tag {
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.75rem;
-  background: linear-gradient(135deg, #FFB787, #FD5732);
+  background: linear-gradient(135deg, #10b981, #34d399);
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 700;
   color: white;
-  box-shadow: 0 2px 8px rgba(253, 87, 50, 0.3);
-  animation: slideInRight 0.6s ease-out 0.3s both;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  animation: slideInRight 0.6s ease-out 0.3s both, pulse 2s ease-in-out 1s infinite;
 }
 
 @keyframes slideInRight {
