@@ -4,7 +4,7 @@
 
 **Multi-Platform News & Content Crawler Suite**
 
-An open-source crawler toolkit for developers & researchers with CLI invocation, Web UI, and unified JSON output, MCP support
+An open-source crawler toolkit for developers & researchers with CLI invocation, Web UI, unified JSON output, MCP support, and Claude Code Skills
 
 Supports 12 mainstream platforms: WeChat, Toutiao, NetEase, Sohu, Tencent, Naver, Detik, Quora, BBC, CNN, Twitter/X
 
@@ -29,9 +29,9 @@ English · [中文](README.md)
 
 <div align="center">
 
-| 🌍 Multi-Platform | 🎨 Dual Modes | 📦 Standardized | ⚡ Fast Setup |
-|:---:|:---:|:---:|:---:|
-| 12 Platforms<br/>CN/EN/KR/ID | Python API<br/>+ Web UI | Unified JSON<br/>Easy Integration | uv Manager<br/>Lightning Fast |
+| 🌍 Multi-Platform | 🎨 Dual Modes | 📦 Standardized | ⚡ Fast Setup | 🧩 Skills Support |
+|:---:|:---:|:---:|:---:|:---:|
+| 12 Platforms<br/>CN/EN/KR/ID | Python API<br/>+ Web UI | Unified JSON<br/>Easy Integration | uv Manager<br/>Lightning Fast | Claude Code<br/>Portable Skills |
 
 </div>
 
@@ -40,7 +40,7 @@ English · [中文](README.md)
 - ✅ **Multi-Platform Support** - WeChat, Toutiao, NetEase, Sohu, Tencent, Lenny's Newsletter, Naver Blog, Detik News, Quora, BBC News, CNN News, Twitter/X
 - ✅ **Smart Extraction** - Auto-detect platform type, extract title, content, images, videos
 - ✅ **Unified Output** - Standardized JSON format perfect for data analysis, storage, downstream processing
-- ✅ **Flexible Usage** - Python API (for automation) + Web UI (visual, no-code) + MCP Server (AI Agents)
+- ✅ **Flexible Usage** - Python API (for automation) + Web UI (visual, no-code) + MCP Server (AI Agents) + Claude Code Skills
 - ✅ **One-Click Deployment** - Docker Compose orchestrates all services (Backend + Frontend + MCP)
 - ✅ **AI Agent Integration** - MCP (Model Context Protocol) support for Claude Desktop and AI tools
 - ✅ **Modular Design** - Decoupled crawlers, easy to extend or optimize
@@ -278,6 +278,43 @@ Claude: [Uses batch_extract_news] "Here's the combined Markdown..."
 ```
 
 📖 **Full MCP Documentation**: [news_extractor_mcp/README.md](news_extractor_mcp/README.md)
+
+---
+
+### Method 5: Claude Code Skills (AI Coding Assistant Integration)
+
+**What are Claude Code Skills?**
+
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) is Anthropic's AI coding assistant. Skills are portable, self-contained modules that can be copied into any project, giving Claude Code the ability to extract news content automatically.
+
+**How is this different from MCP?**
+- **MCP Server** - Requires running a standalone service, ideal for long-running AI workflows
+- **Claude Code Skills** - Copy to your project and use immediately, no service needed, ideal for developers who want quick news extraction during coding
+
+**Use Cases:**
+- 🧩 Give Claude Code news extraction capabilities in any project
+- 📦 Self-contained, no external services required — just copy and use
+- 🔧 Quickly extract news content during development for testing or analysis
+
+**Installation:**
+
+Copy the `.claude/skills/news-extractor/` directory from this project to your target project and install dependencies:
+
+```bash
+# 1. Copy skill to your project
+cp -r NewsCrawler/.claude/skills/news-extractor <your-project>/.claude/skills/news-extractor
+
+# 2. Install dependencies
+cd <your-project>/.claude/skills/news-extractor
+uv sync
+
+# 3. Use directly in Claude Code
+# Claude Code will automatically read SKILL.md and gain news extraction capabilities
+```
+
+**Supports 12 platforms**: WeChat, Toutiao, NetEase, Sohu, Tencent, BBC News, CNN News, Twitter/X, Lenny's Newsletter, Naver Blog, Detik News, Quora
+
+📖 **Full Installation Guide**: [INSTALL_SKILL.md](INSTALL_SKILL.md)
 
 ---
 

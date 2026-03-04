@@ -7,7 +7,7 @@
 
 支持微信公众号、今日头条、网易新闻、搜狐、腾讯、Naver、Detik、Quora、BBC、CNN、Twitter/X 等 12 个主流平台
 
-提供命令行调用、可视化 Web UI、统一 JSON 输出、支持MCP协议
+提供命令行调用、可视化 Web UI、统一 JSON 输出、支持 MCP 协议、Claude Code Skills
 
 [![GitHub stars](https://img.shields.io/github/stars/NanmiCoder/NewsCrawler?style=social)](https://github.com/NanmiCoder/NewsCrawler/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/NanmiCoder/NewsCrawler?style=social)](https://github.com/NanmiCoder/NewsCrawler/network/members)
@@ -30,9 +30,9 @@
 
 <div align="center">
 
-| 🌍 多平台支持 | 🎨 双模式使用 | 📦 标准化输出 | ⚡ 快速部署 | 🤖 MCP 支持 |
-|:---:|:---:|:---:|:---:|:---:|
-| 12 个主流平台<br/>覆盖中英韩印尼 | Python API<br/>+ Web UI | 统一 JSON 格式<br/>易于集成 | uv 包管理器<br/>极速安装 | 集成各类AI总结文章 |
+| 🌍 多平台支持 | 🎨 双模式使用 | 📦 标准化输出 | ⚡ 快速部署 | 🤖 MCP 支持 | 🧩 Skills 支持 |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| 12 个主流平台<br/>覆盖中英韩印尼 | Python API<br/>+ Web UI | 统一 JSON 格式<br/>易于集成 | uv 包管理器<br/>极速安装 | 集成各类AI总结文章 | Claude Code<br/>可迁移技能 |
 
 
 </div>
@@ -42,7 +42,7 @@
 - ✅ **全平台覆盖** - 支持微信公众号、今日头条、网易、搜狐、腾讯、Lenny's Newsletter、Naver Blog、Detik News、Quora、BBC News、CNN News、Twitter/X
 - ✅ **智能提取** - 自动识别平台类型,提取标题、正文、图片、视频等多媒体内容
 - ✅ **统一输出** - 所有平台输出标准化 JSON 格式,完美适配数据分析、入库、下游处理
-- ✅ **灵活使用** - 支持 Python API(自动化) + Web UI(可视化) + MCP Server(AI Agent)
+- ✅ **灵活使用** - 支持 Python API(自动化) + Web UI(可视化) + MCP Server(AI Agent) + Claude Code Skills
 - ✅ **一键部署** - Docker Compose 编排所有服务(后端 + 前端 + MCP)
 - ✅ **AI 智能体集成** - 支持 MCP 协议,可接入 Claude Desktop 等 AI 工具
 - ✅ **模块化设计** - 各平台爬虫解耦,易于扩展新平台或优化现有实现
@@ -271,6 +271,43 @@ uv run news-extractor-mcp --host 0.0.0.0 --port 8765
 
 
 📖 **完整 MCP 文档**: [news_extractor_mcp/README.md](news_extractor_mcp/README.md)
+
+---
+
+### 方式五:Claude Code Skills (AI 编程助手集成)
+
+**什么是 Claude Code Skills?**
+
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) 是 Anthropic 推出的 AI 编程助手。Skills 是 Claude Code 的可迁移技能模块,可以复制到任何项目中使用,让 AI 助手自动获得新闻提取能力。
+
+**与 MCP 的区别:**
+- **MCP Server** - 需要启动独立服务,适合长期运行的 AI 工作流
+- **Claude Code Skills** - 复制到项目即可使用,无需启动服务,适合开发者在编码时快速提取新闻
+
+**使用场景:**
+- 🧩 在任何项目中让 Claude Code 具备新闻提取能力
+- 📦 自包含、无需外部服务,复制即用
+- 🔧 开发过程中快速提取新闻内容用于测试或分析
+
+**安装方式:**
+
+将本项目的 `.claude/skills/news-extractor/` 目录复制到你的目标项目,然后安装依赖即可:
+
+```bash
+# 1. 复制技能到目标项目
+cp -r NewsCrawler/.claude/skills/news-extractor <你的项目>/.claude/skills/news-extractor
+
+# 2. 安装依赖
+cd <你的项目>/.claude/skills/news-extractor
+uv sync
+
+# 3. 在 Claude Code 中直接使用
+# Claude Code 会自动读取 SKILL.md 并获得新闻提取能力
+```
+
+**支持 12 个平台**: 微信公众号、今日头条、网易新闻、搜狐新闻、腾讯新闻、BBC News、CNN News、Twitter/X、Lenny's Newsletter、Naver Blog、Detik News、Quora
+
+📖 **完整安装指南**: [INSTALL_SKILL.md](INSTALL_SKILL.md)
 
 ---
 
