@@ -1,0 +1,17 @@
+[project]
+name = "news-extractor"
+version = "1.0.0"
+description = "新闻站点内容提取工具，支持 12 个平台"
+requires-python = ">=3.9"
+
+dependencies = [
+    "pydantic>=2.0",
+    "requests>=2.28",
+    "curl_cffi>=0.7.3,<0.8",
+    "tenacity>=8.0",
+    "parsel>=1.8",
+    "demjson3>=3.0",
+]
+
+[tool.uv]
+dev-dependencies = []
