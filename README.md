@@ -21,28 +21,9 @@ NewsCrawler 的首要产品是可迁移的 **`news-extractor` Agent Skill**。�
 
 ## 支持的 12 个平台
 
-<table align="center">
-  <tr>
-    <td align="center" width="33%"><img src="./news-extractor-ui/frontend/public/logos/wechat.webp" height="46" alt="微信公众号 Logo"><br><strong>微信公众号</strong><br><sub><code>wechat</code></sub></td>
-    <td align="center" width="33%"><img src="./news-extractor-ui/frontend/public/logos/toutiao.png" height="46" alt="今日头条 Logo"><br><strong>今日头条</strong><br><sub><code>toutiao</code></sub></td>
-    <td align="center" width="33%"><img src="./news-extractor-ui/frontend/public/logos/wangyi.webp" height="46" alt="网易新闻 Logo"><br><strong>网易新闻</strong><br><sub><code>netease</code></sub></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="./news-extractor-ui/frontend/public/logos/sohu.jpg" height="46" alt="搜狐新闻 Logo"><br><strong>搜狐新闻</strong><br><sub><code>sohu</code></sub></td>
-    <td align="center"><img src="./news-extractor-ui/frontend/public/logos/tencent_news.webp" height="46" alt="腾讯新闻 Logo"><br><strong>腾讯新闻</strong><br><sub><code>tencent</code></sub></td>
-    <td align="center"><img src="./news-extractor-ui/frontend/public/logos/lennys_newsletter_logo.jpeg" height="46" alt="Lenny's Newsletter Logo"><br><strong>Lenny's Newsletter</strong><br><sub><code>lenny</code></sub></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="./news-extractor-ui/frontend/public/logos/Naver_Blog.jpg" height="46" alt="Naver Blog Logo"><br><strong>Naver Blog</strong><br><sub><code>naver</code></sub></td>
-    <td align="center"><img src="./news-extractor-ui/frontend/public/logos/Detik_News.png" height="46" alt="Detik News Logo"><br><strong>Detik News</strong><br><sub><code>detik</code></sub></td>
-    <td align="center"><img src="./news-extractor-ui/frontend/public/logos/Quora.png" height="46" alt="Quora Logo"><br><strong>Quora</strong><br><sub><code>quora</code></sub></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="./news-extractor-ui/frontend/public/logos/bbc.png" height="46" alt="BBC News Logo"><br><strong>BBC News</strong><br><sub><code>bbc</code></sub></td>
-    <td align="center"><img src="./news-extractor-ui/frontend/public/logos/cnn.png" height="46" alt="CNN News Logo"><br><strong>CNN News</strong><br><sub><code>cnn</code></sub></td>
-    <td align="center"><img src="./news-extractor-ui/frontend/public/logos/twitter.png" height="46" alt="Twitter X Logo"><br><strong>Twitter / X</strong><br><sub><code>twitter</code></sub></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="./assets/readme/platforms.png" width="100%" alt="NewsCrawler 支持微信公众号、今日头条、网易新闻、搜狐新闻、腾讯新闻、Lenny's Newsletter、Naver Blog、Detik News、Quora、BBC News、CNN News 和 Twitter/X 共 12 个平台">
+</p>
 
 <details>
 <summary><strong>查看 URL 识别示例</strong></summary>
