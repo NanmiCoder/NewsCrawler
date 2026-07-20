@@ -1,510 +1,296 @@
-<div align="center">
+<p align="center">
+  <img src="./assets/readme/hero-en.svg" width="100%" alt="NewsCrawler Agent Skill gives Agents structured article content instead of a full webpage DOM; JSON used 97.11% fewer tokens in a real test">
+</p>
 
-# 🌐 NewsCrawler
+<p align="center">
+  <a href="https://github.com/NanmiCoder/NewsCrawler/stargazers"><img src="https://img.shields.io/github/stars/NanmiCoder/NewsCrawler?style=flat-square&color=FD5732" alt="GitHub Stars"></a>
+  <a href="./.claude/skills/news-extractor/SKILL.md"><img src="https://img.shields.io/badge/Agent_Skill-news--extractor-FD5732?style=flat-square" alt="news-extractor Agent Skill"></a>
+  <a href="https://github.com/vercel-labs/skills"><img src="https://img.shields.io/badge/install-npx_skills_add-232121?style=flat-square" alt="Install with npx skills add"></a>
+  <img src="https://img.shields.io/badge/Platforms-12-232121?style=flat-square" alt="12 supported platforms">
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10 or newer"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-232121?style=flat-square" alt="GPL-3.0 License"></a>
+</p>
 
-**Multi-Platform News & Content Crawler Suite**
+<p align="center">
+  <strong>Give an Agent one URL and get the article, images, and metadata—without launching a browser or filling context with the entire DOM.</strong>
+  <br>
+  English · <a href="./README.md">简体中文</a>
+</p>
 
-An open-source crawler toolkit for developers & researchers with CLI invocation, Web UI, unified JSON output, MCP support, and Claude Code Skills
+NewsCrawler's primary product is the portable **`news-extractor` Agent Skill**. It packages extraction code for 12 news and content platforms in one self-contained directory, so Codex, Claude Code, and other Agents that support `SKILL.md` can extract articles locally and receive consistent JSON or Markdown.
 
-Supports 12 mainstream platforms: WeChat, Toutiao, NetEase, Sohu, Tencent, Naver, Detik, Quora, BBC, CNN, Twitter/X
+## 12 supported platforms
 
-[![GitHub stars](https://img.shields.io/github/stars/NanmiCoder/NewsCrawler?style=social)](https://github.com/NanmiCoder/NewsCrawler/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/NanmiCoder/NewsCrawler?style=social)](https://github.com/NanmiCoder/NewsCrawler/network/members)
-[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-Educational-green.svg)](LICENSE)
+<p align="center">
+  <img src="./assets/readme/platforms-en.png" width="100%" alt="NewsCrawler supports WeChat Official Accounts, Toutiao, NetEase News, Sohu News, Tencent News, Lenny's Newsletter, Naver Blog, Detik News, Quora, BBC News, CNN News, and Twitter/X">
+</p>
 
-English · [中文](README.md)
+<details>
+<summary><strong>View URL recognition examples</strong></summary>
 
-</div>
+| ID | Example URL pattern |
+| --- | --- |
+| `wechat` | `mp.weixin.qq.com/s/...` |
+| `toutiao` | `toutiao.com/article/...` |
+| `netease` | `163.com/news/article/...` |
+| `sohu` | `sohu.com/a/...` |
+| `tencent` | `news.qq.com/rain/a/...` |
+| `lenny` | `lennysnewsletter.com/...` |
+| `naver` | `*.naver.com/...` |
+| `detik` | `news.detik.com/...` |
+| `quora` | `*.quora.com/...` |
+| `bbc` | `bbc.com/news/articles/...` |
+| `cnn` | `cnn.com/YYYY/MM/DD/...` |
+| `twitter` | `x.com/<user>/status/<id>` |
 
----
+</details>
 
-![Web UI Interface](static/images/03_webui_en.png)
+> Site structures, login flows, and anti-bot rules change. If extraction fails, first verify the URL pattern, network access, and cookie requirements, then inspect the relevant adapter.
 
-**Ready-to-use Web UI** - Auto-detect platform, real-time progress, JSON/Markdown export
+## Why Agents need this Skill
 
----
+When you give a general-purpose Agent only a link, it still has to decide how to open the page, where the article starts, which menus and recommendations are noise, and how images relate to the text.
 
-## 🎯 Why NewsCrawler?
+| Generic browser path | NewsCrawler Skill path |
+| --- | --- |
+| URL → launch browser → load DOM / accessibility tree → find article → remove noise → reason | URL → detect platform → extract with code → normalize as `NewsItem` → reason |
+| Context may contain scripts, navigation, ads, recommendations, and duplicate links | Context contains only the title, metadata, ordered article content, and media |
+| The Agent must rediscover each site's structure | Platform rules live in testable, reusable adapters |
+| Requires a browser session and several tool calls | Runs as a local command with no persistent service |
 
-<div align="center">
+The main saving is not just extraction time. It preserves expensive model context for summarization, retrieval, comparison, and judgment.
 
-| 🌍 Multi-Platform | 🎨 Dual Modes | 📦 Standardized | ⚡ Fast Setup | 🧩 Skills Support |
-|:---:|:---:|:---:|:---:|:---:|
-| 12 Platforms<br/>CN/EN/KR/ID | Python API<br/>+ Web UI | Unified JSON<br/>Easy Integration | uv Manager<br/>Lightning Fast | Claude Code<br/>Portable Skills |
+## Real-world test: how many tokens does one article save?
 
-</div>
+On 2026-07-20, we tested the same live [Detik News article](https://news.detik.com/berita/d-8562773/gunung-anak-krakatau-erupsi-muntahkan-abu-vulkanik-150-meter) through both paths. The Skill successfully extracted **10 text blocks and 1 image**.
 
-**Key Features:**
+Every payload was counted with the same `tiktoken o200k_base` tokenizer:
 
-- ✅ **Multi-Platform Support** - WeChat, Toutiao, NetEase, Sohu, Tencent, Lenny's Newsletter, Naver Blog, Detik News, Quora, BBC News, CNN News, Twitter/X
-- ✅ **Smart Extraction** - Auto-detect platform type, extract title, content, images, videos
-- ✅ **Unified Output** - Standardized JSON format perfect for data analysis, storage, downstream processing
-- ✅ **Flexible Usage** - Python API (for automation) + Web UI (visual, no-code) + MCP Server (AI Agents) + Claude Code Skills
-- ✅ **One-Click Deployment** - Docker Compose orchestrates all services (Backend + Frontend + MCP)
-- ✅ **AI Agent Integration** - MCP (Model Context Protocol) support for Claude Desktop and AI tools
-- ✅ **Modular Design** - Decoupled crawlers, easy to extend or optimize
-- ✅ **Lightweight & Efficient** - uv-managed dependencies, fast installation, stable runtime
+| Content sent to the Agent | Tokens | Compared with full DOM |
+| --- | ---: | ---: |
+| Browser-rendered DOM | 59,788 | Baseline |
+| Browser accessibility snapshot | 6,842 | 88.56% fewer |
+| Browser visible text | 1,907 | 96.81% fewer |
+| **Skill structured JSON** | **1,730** | **97.11% fewer** |
+| **Skill Markdown** | **633** | **98.94% fewer** |
 
----
+> Structured JSON reduced the payload from 59,788 tokens to 1,730—about **1/34.56** the size of the browser DOM. When the Agent only needs to read the article, Markdown uses 633 tokens, or about **1/94.45**.
 
-## 🚀 Quick Start
+The result has important boundaries:
 
-### Method 1: Docker Compose (⭐ Recommended - One-Click Deployment)
+- Compared with browser `body.innerText`, JSON used 9.28% fewer tokens and Markdown used 66.81% fewer. The Skill also provides clean sections and stable fields instead of only shortening text.
+- Compared with an already compressed browser accessibility snapshot, JSON still used 74.71% fewer tokens and Markdown used 90.75% fewer.
+- This is one live page measured at one point in time; other sites will produce different ratios.
+- The numbers cover content payloads only. They exclude prompts, tool-call wrappers, screenshots, and model output.
+- Browser compression strategies, accessibility trees, and tokenizers differ across Agents and will change the absolute counts.
 
-```bash
-# 1. Install Docker & Docker Compose
-# Visit: https://docs.docker.com/get-docker/
+The complete counts, hashes, and reproduction notes are stored in the [benchmark record](./benchmarks/token-efficiency/2026-07-20-detik.json). The original webpage and article content are not copied into this repository.
 
-# 2. Clone repository
-git clone https://github.com/NanmiCoder/NewsCrawler.git
-cd NewsCrawler
+<details>
+<summary><strong>View the test method</strong></summary>
 
-# 3. One-click start all services (Backend + Frontend + MCP)
-docker compose up -d
+The browser side loaded the article in the same signed-out session and captured:
 
-# 4. Access services
-# - Frontend UI: http://localhost:3000
-# - Backend API: http://localhost:8000/docs
-# - MCP Server: http://localhost:8765/mcp
+```text
+document.documentElement.outerHTML  → rendered DOM
+agent-browser snapshot -c          → accessibility snapshot
+agent-browser get text body        → visible text
 ```
 
-**What's included:**
-- ✅ **Backend Service** (FastAPI) - News extraction API
-- ✅ **Frontend Service** (Vue 3 + Nginx) - Web UI interface
-- ✅ **MCP Service** - AI Agent tools for Claude Desktop
-- ✅ **Auto Health Checks** - Ensures all services are running
-- ✅ **Data Persistence** - Extracted news saved in `./data/`
-
-**Docker Management:**
-```bash
-# View logs
-docker compose logs -f
-
-# Stop services
-docker compose down
-
-# Rebuild after code update
-docker compose up -d --build
-```
-
-📖 **Full Documentation**: [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
-
----
-
-### Method 2: Web UI (Manual Setup)
+The Skill side ran:
 
 ```bash
-# 1. Install uv
-curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
-# or: pip install uv
-
-# 2. Clone repository
-git clone https://github.com/NanmiCoder/NewsCrawler.git
-cd NewsCrawler
-
-# 3. Install all dependencies (uv workspace mode)
+cd .claude/skills/news-extractor
 uv sync
-
-# 4. Start backend (from project root)
-uv run news-extractor-backend --host 0.0.0.0 --port 8000
-
-# 5. Start frontend (new terminal)
-cd news-extractor-ui/frontend
-npm install && npm run dev
-
-# 6. Visit http://localhost:3000
+uv run scripts/extract_news.py \
+  "https://news.detik.com/berita/d-8562773/gunung-anak-krakatau-erupsi-muntahkan-abu-vulkanik-150-meter" \
+  --format both
 ```
 
-**Web UI Features:**
-- 🎯 Paste URL, auto-detect platform type
-- 📊 Real-time extraction progress
-- 📄 JSON / Markdown dual-format export
-- 🖼️ Content preview & one-click download
+Finally, `tiktoken.get_encoding("o200k_base")` counted the DOM, accessibility snapshot, visible text, JSON, and Markdown payloads.
 
-📖 **Detailed Deployment Guide**: [MANUAL_DEPLOYMENT.md](MANUAL_DEPLOYMENT.md)
+</details>
 
----
+## Installation: two Agent-friendly options
 
-### Method 3: Python API (For Automation)
+`news-extractor` follows the open [Agent Skills specification](https://agentskills.io/specification). [vercel-labs/skills](https://github.com/vercel-labs/skills) can discover and install it directly from this repository. The source directory is [`.claude/skills/news-extractor`](./.claude/skills/news-extractor/), which contains the complete `SKILL.md`, scripts, dependencies, and references.
 
-```python
-from news_crawler.wechat_news import WeChatNewsCrawler
-from news_crawler.toutiao_news import ToutiaoNewsCrawler
+### Option 1: use `npx skills` (recommended)
 
-# WeChat Official Account
-wechat_url = "https://mp.weixin.qq.com/s/xxxxxx"
-crawler = WeChatNewsCrawler(wechat_url)
-result = crawler.run()  # Auto-save to data/ directory
-
-# Toutiao
-toutiao_url = "https://www.toutiao.com/article/xxxxxx"
-crawler = ToutiaoNewsCrawler(toutiao_url)
-result = crawler.run()
-
-print(result)  # Returns JSON format data
-```
-
-**Run Examples:**
-```bash
-uv run call_example.py  # View complete examples
-```
-
----
-
-### Method 4: MCP Server (AI Agent Integration)
-
-**What is MCP?**
-[Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is a standard for connecting AI assistants (like Claude Desktop) to external tools and data sources.
-
-**Use Cases:**
-- 🤖 Let Claude extract news directly through conversation
-- 🔄 Batch process multiple URLs via AI commands
-- 📊 AI-powered content analysis workflows
-- 🚀 Build custom AI agents with news extraction capabilities
-
-**Quick Setup:**
+No repository clone or manual directory copy is required:
 
 ```bash
-# 1. Start MCP Server (Recommended: Docker)
-docker compose up -d mcp
-
-# 2. Or start manually (from project root)
-# First install dependencies
-uv sync
-
-# Start MCP server
-uv run news-extractor-mcp --host 0.0.0.0 --port 8765
-
-# 3. MCP Server running at: http://localhost:8765/mcp
+npx skills add NanmiCoder/NewsCrawler --skill news-extractor -g
 ```
 
-**AI Tool Configuration (Streamable HTTP):**
-
-<details>
-<summary><b>Cursor</b> (Click to expand)</summary>
-
-Config file: `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project-level)
-
-```json
-{
-  "mcpServers": {
-    "newscrawler": {
-      "url": "http://127.0.0.1:8765/mcp"
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>Windsurf</b> (Click to expand)</summary>
-
-Config file: `~/.codeium/windsurf/mcp_server_config.json`
-
-```json
-{
-  "mcpServers": {
-    "newscrawler": {
-      "url": "http://127.0.0.1:8765/mcp"
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>Trae</b> (Click to expand)</summary>
-
-Settings → Tools → MCP Servers → Add Server
-
-```json
-{
-  "name": "newscrawler",
-  "url": "http://127.0.0.1:8765/mcp"
-}
-```
-</details>
-
-<details>
-<summary><b>Claude Desktop</b> (Click to expand)</summary>
-
-Config file location:
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "newscrawler": {
-      "url": "http://127.0.0.1:8765/mcp"
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>Other MCP-Compatible Tools</b> (Click to expand)</summary>
-
-All MCP clients supporting Streamable HTTP transport can use:
-
-```json
-{
-  "mcpServers": {
-    "newscrawler": {
-      "url": "http://127.0.0.1:8765/mcp"
-    }
-  }
-}
-```
-
-**Note**: If using Docker and your AI tool runs outside Docker, replace `127.0.0.1` with host IP or `host.docker.internal`
-</details>
-
-**Available MCP Tools:**
-- `extract_news` - Extract single news article (JSON or Markdown)
-- `batch_extract_news` - Extract multiple URLs in batch
-- `detect_news_platform` - Identify platform type from URL
-- `list_supported_platforms` - Show all supported platforms
-
-**Example Conversation with Claude:**
-```
-You: "Extract this WeChat article: https://mp.weixin.qq.com/s/xxxxx"
-Claude: [Uses extract_news tool] "I've extracted the article..."
-
-You: "Extract these 3 URLs in Markdown format: [url1, url2, url3]"
-Claude: [Uses batch_extract_news] "Here's the combined Markdown..."
-```
-
-📖 **Full MCP Documentation**: [news_extractor_mcp/README.md](news_extractor_mcp/README.md)
-
----
-
-### Method 5: Claude Code Skills (AI Coding Assistant Integration)
-
-**What are Claude Code Skills?**
-
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code) is Anthropic's AI coding assistant. Skills are portable, self-contained modules that can be copied into any project, giving Claude Code the ability to extract news content automatically.
-
-**How is this different from MCP?**
-- **MCP Server** - Requires running a standalone service, ideal for long-running AI workflows
-- **Claude Code Skills** - Copy to your project and use immediately, no service needed, ideal for developers who want quick news extraction during coding
-
-**Use Cases:**
-- 🧩 Give Claude Code news extraction capabilities in any project
-- 📦 Self-contained, no external services required — just copy and use
-- 🔧 Quickly extract news content during development for testing or analysis
-
-**Installation:**
-
-Copy the `.claude/skills/news-extractor/` directory from this project to your target project and install dependencies:
+The command detects supported Agents on your machine and lets you choose the installation target. You can also specify one directly:
 
 ```bash
-# 1. Copy skill to your project
-cp -r NewsCrawler/.claude/skills/news-extractor <your-project>/.claude/skills/news-extractor
+# Codex
+npx skills add NanmiCoder/NewsCrawler --skill news-extractor -g -a codex -y
 
-# 2. Install dependencies
-cd <your-project>/.claude/skills/news-extractor
-uv sync
-
-# 3. Use directly in Claude Code
-# Claude Code will automatically read SKILL.md and gain news extraction capabilities
+# Claude Code
+npx skills add NanmiCoder/NewsCrawler --skill news-extractor -g -a claude-code -y
 ```
 
-**Supports 12 platforms**: WeChat, Toutiao, NetEase, Sohu, Tencent, BBC News, CNN News, Twitter/X, Lenny's Newsletter, Naver Blog, Detik News, Quora
+`npx skills` installs the Skill files. On first use, the Agent follows `SKILL.md` and runs `uv sync` inside the Skill directory to install the Python dependencies.
 
-📖 **Full Installation Guide**: [INSTALL_SKILL.md](INSTALL_SKILL.md)
+### Option 2: send this README to your Agent
 
----
+If you do not want to run the command yourself, send this entire prompt to Codex, Claude Code, or another Skills-compatible Agent:
 
-## 📦 Supported Platforms
+```text
+Read this project's README:
+https://github.com/NanmiCoder/NewsCrawler/blob/main/README.en.md
 
-### News / Content Platforms
-
-| Platform | URL Example | Language | Features |
-|----------|-------------|----------|----------|
-| WeChat Official Accounts | `mp.weixin.qq.com` | Chinese | Articles & videos |
-| Toutiao | `toutiao.com` | Chinese | Rich media, videos |
-| NetEase News | `163.com` | Chinese | Image galleries |
-| Sohu News | `sohu.com` | Chinese | Multimedia content |
-| Tencent News | `news.qq.com` | Chinese | Video news |
-| Lenny's Newsletter | `lennysnewsletter.com` | English | Long-form content |
-| Naver Blog | `blog.naver.com` | Korean | Blog platform |
-| Detik News | `detik.com` | Indonesian | Southeast Asia news |
-| Quora | `quora.com` | English | Q&A content |
-| Twitter/X | `x.com` `twitter.com` | Multi-lang | Tweet extraction |
-
-### Stock Video Platforms
-**Pexels** · **Pixabay** · **Coverr** · **Mixkit** - High-quality free video downloads
-
----
-
-## 💡 Use Cases
-
-```
-📰 Multi-source news aggregation / Public opinion monitoring
-📊 Media content analysis, data mining, recommendation systems
-🔬 Academic research / Data science - Cross-platform extraction
-🎓 Educational projects / Personal learning - Crawler framework
-🤖 AI training data collection / Content quality analysis
+Follow the Agent Skills installation instructions in the README and install the
+news-extractor Skill for yourself. After installation, run --list-platforms to
+verify it. Do not start Docker, MCP, or the Web UI.
 ```
 
----
+The Agent can get the standard installation command from the README, then follow the repository's `SKILL.md` for dependencies and usage.
 
-## 📊 Data Output Format
+### First invocation
 
-All crawlers output unified JSON format, saved in `data/` directory:
+After installation, give the Agent a link and a task:
+
+```text
+Use the news-extractor Skill to extract and summarize this article:
+https://news.detik.com/berita/d-8562773/gunung-anak-krakatau-erupsi-muntahkan-abu-vulkanik-150-meter
+```
+
+The Agent detects the task from the Skill description and runs the appropriate local script. You do not need to start the Web UI, FastAPI, MCP, or Docker.
+
+For a manual check, run this inside the Skill directory:
+
+```bash
+uv run scripts/extract_news.py "URL" --format json --output ./output
+```
+
+See the [Skill documentation](./.claude/skills/news-extractor/SKILL.md) for more options and examples.
+
+## What the Agent receives
+
+Every platform is normalized into the same `NewsItem` shape:
 
 ```json
 {
-  "title": "Article Title",
-  "news_url": "Original URL",
-  "news_id": "Article ID",
+  "title": "Article title",
+  "news_url": "https://example.com/article",
+  "news_id": "article-id",
   "meta_info": {
-    "author_name": "Author Name",
-    "author_url": "Author Homepage",
-    "publish_time": "2024-10-15 10:30:00"
+    "author_name": "Author",
+    "author_url": "https://example.com/author",
+    "publish_time": "2026-01-01 10:00:00"
   },
   "contents": [
-    {"type": "text", "content": "Paragraph text", "desc": ""},
-    {"type": "image", "content": "https://example.com/image.jpg", "desc": "Image desc"},
-    {"type": "video", "content": "https://example.com/video.mp4", "desc": "Video desc"}
+    {"type": "text", "content": "First paragraph", "desc": ""},
+    {"type": "image", "content": "https://example.com/image.jpg", "desc": ""},
+    {"type": "video", "content": "https://example.com/video.mp4", "desc": ""}
   ],
-  "texts": ["Paragraph 1", "Paragraph 2"],
-  "images": ["Image URL 1", "Image URL 2"],
-  "videos": ["Video URL 1"]
+  "texts": ["First paragraph"],
+  "images": ["https://example.com/image.jpg"],
+  "videos": ["https://example.com/video.mp4"]
 }
 ```
 
-**Field Descriptions:**
-- `contents` - Structured content preserving order and type (text/image/video)
-- `texts/images/videos` - Flattened lists for quick access to specific content types
-- `meta_info` - Article metadata (author, publish time, etc.)
+- `contents` preserves the original order of text, images, and video.
+- `texts`, `images`, and `videos` give Agents and downstream programs direct access to a specific content type.
+- Markdown is convenient for reading, summarization, and knowledge bases; JSON is better for search, storage, analysis, and workflow orchestration.
 
----
+## How the Skill works
 
-## 🔧 Technology Stack
+<p align="center">
+  <img src="./assets/readme/workflow-en.svg" width="100%" alt="An Agent gives a URL to the news-extractor Skill, which extracts the article with platform code and returns structured context">
+</p>
 
-### Backend
-**Python 3.8+** · **FastAPI** · **Pydantic** · **curl_cffi** · **parsel** · **tenacity**
+1. The Agent identifies an article-extraction task from the `SKILL.md` description.
+2. `detector.py` selects a platform from the URL.
+3. The matching crawler fetches the page, and platform-specific code locates the article and media.
+4. `NewsItem` normalizes the fields while preserving content order.
+5. The Agent reads only JSON or Markdown and uses the remaining context for summarization, retrieval, or analysis.
 
-### Frontend
-**Vue 3** · **TypeScript** · **Vite** · **Axios**
-
-### Dev Tools
-**uv** (package manager) · **Playwright** (browser automation, optional)
-
-### Project Structure
-```
-NewsCrawler/
-├── news_crawler/              # Core crawler modules
-│   ├── wechat_news/          # WeChat
-│   ├── toutiao_news/         # Toutiao
-│   ├── netease_news/         # NetEase
-│   ├── sohu_news/            # Sohu
-│   ├── tencent_news/         # Tencent
-│   └── ...                   # Other platforms
-│
-├── news_extractor_core/       # Shared core library (uv workspace member)
-│   ├── adapters/             # Platform adapters
-│   ├── services/             # Business logic
-│   └── models/               # Data models
-│
-├── news_extractor_backend/    # FastAPI backend service (uv workspace member)
-│   ├── api/                  # API routes
-│   ├── main.py               # Application entry
-│   └── cli.py                # CLI entry point
-│
-├── news_extractor_mcp/        # MCP server (uv workspace member)
-│   ├── server.py             # MCP implementation
-│   └── README.md             # MCP documentation
-│
-├── news-extractor-ui/         # Web UI application
-│   └── frontend/             # Vue 3 frontend
-│
-├── video_crawler/             # Video downloaders
-├── libs/                      # Utility libraries
-├── data/                      # Output directory
-│
-├── pyproject.toml             # uv workspace root config
-├── uv.lock                    # Dependency lock file
-├── Dockerfile                 # Multi-stage Docker build
-├── docker-compose.yml         # Service orchestration
-├── DOCKER_DEPLOYMENT.md       # Docker deployment guide
-└── MANUAL_DEPLOYMENT.md       # Manual deployment guide
+```text
+news-extractor/
+├── SKILL.md
+├── pyproject.toml
+├── references/
+│   └── platform-patterns.md
+└── scripts/
+    ├── extract_news.py
+    ├── detector.py
+    ├── formatter.py
+    ├── models.py
+    └── crawlers/              # independent implementations for 12 platforms
 ```
 
----
+## Development and extension
 
-## ⚠️ Important Notice
+```bash
+# Root repository dependencies and tests
+uv sync
+uv run pytest
 
-> **This project is for educational and research purposes only. Commercial use is prohibited.**
+# Validate the Skill
+cd .claude/skills/news-extractor
+uv sync
+uv run scripts/extract_news.py --list-platforms
+```
 
-**Usage Guidelines:**
-- ✅ Personal learning, research, educational purposes only
-- ✅ Comply with target websites' robots.txt and terms of service
-- ✅ Control request frequency to avoid server stress
-- ❌ Do not use for illegal purposes or infringe on others' rights
-- ❌ No large-scale commercial crawling
+When adding a platform, update all three layers:
 
-**Technical Notes:**
-- Some platforms may have anti-scraping mechanisms; adjust strategies accordingly
-- Default headers may expire; use Playwright to auto-fetch fresh cookies
-- Web page structure changes may cause parsing failures; feel free to submit issues
+1. The crawler and URL detection rules inside the Skill.
+2. The service adapter under the root repository's `news_extractor_core/adapters/`.
+3. Parser tests, sanitized fixtures, and the README platform list.
 
----
+Issues and pull requests are welcome. Include a reproducible URL, expected fields, and sanitized actual output. Never submit cookies, tokens, or site credentials.
 
-## 🤝 Contributing
+## Responsible use and license
 
-Issues and Pull Requests are welcome!
+- This repository is intended for learning, research, and personal content workflows. You are responsible for verifying that your use case is lawful.
+- Follow the target site's terms of service, `robots.txt`, copyright requirements, and applicable laws.
+- Keep request rates reasonable and avoid unnecessary load on target sites.
+- Pass cookies for authenticated content through local configuration; never commit them to source control.
+- Site changes can break adapters. Please report failures with reproducible, sanitized examples.
 
-**Contribution Areas:**
-- 🐛 Fix bugs
-- ✨ Add new platform support
-- 📝 Improve documentation
-- 🎨 Optimize UI/UX
-- ⚡ Performance optimization
+The code is released under the [GNU General Public License v3.0](./LICENSE); the exact rights and obligations are defined by the license text. Copyright and usage rights for extracted content remain with the original sites and rights holders.
 
-**Submission Process:**
-1. Fork this repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
+## Other interfaces (lower priority)
 
----
+The Skill is the recommended entry point. Use the following modes only when you need a shared service, an HTTP API, or a manual interface.
 
-## 📄 License
+<details>
+<summary><strong>Use the Python package directly</strong></summary>
 
-This project is for learning and research purposes only. By using this project, you agree to:
-- Not use it for commercial purposes
-- Not perform large-scale crawling
-- Comply with relevant laws and target websites' terms of service
+```python
+from news_extractor_core.services import ExtractorService, to_markdown
 
-This project assumes no responsibility for any legal liability arising from its use.
+news, platform = ExtractorService.extract_news("URL")
+print(news.to_dict())
+print(to_markdown(news))
+```
 
----
+</details>
 
-## 🔗 Resources
+<details>
+<summary><strong>MCP / FastAPI / Web UI / Docker Compose</strong></summary>
 
-- [uv - Python Package Manager](https://github.com/astral-sh/uv)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [Vue 3 Documentation](https://vuejs.org/)
-- [Playwright Documentation](https://playwright.dev/)
+MCP is useful when extraction must be shared as an Agent service. FastAPI and the Web UI are intended for system integration or manual operation. None of them is required to use the Skill.
 
----
+```bash
+docker compose up -d
+```
 
-## 🌟 Star History
+| Service | Address |
+| --- | --- |
+| Web UI | [http://localhost:3021](http://localhost:3021) |
+| FastAPI | [http://localhost:8000/docs](http://localhost:8000/docs) |
+| MCP | `http://localhost:8765/mcp` |
 
-[![Star History Chart](https://api.star-history.com/svg?repos=NanmiCoder/NewsCrawler&type=Date)](https://star-history.com/#NanmiCoder/NewsCrawler&Date)
+See the [Docker deployment guide](./DOCKER_DEPLOYMENT.md) and [MCP documentation](./news_extractor_mcp/README.md) for full setup details.
 
----
+</details>
 
-<div align="center">
-
-**If this project helps you, please give us a ⭐ Star!**
-
-Made with ❤️ by [NanmiCoder](https://github.com/NanmiCoder)
-
-</div>
+<p align="center">
+  If NewsCrawler helps your Agent spend context on reasoning instead of webpage noise, consider giving the project a Star.
+</p>

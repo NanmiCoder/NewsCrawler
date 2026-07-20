@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
+  <title id="title">NewsCrawler Agent Skill</title>
+  <desc id="desc">Give an Agent structured article content instead of a full webpage DOM. In a real test, JSON used 97.11% fewer tokens.</desc>
+
+  <defs>
+    <linearGradient id="coral" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FD5732"/>
+      <stop offset="1" stop-color="#C21D03"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFB787" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FD5732" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="400" rx="28" fill="#171311"/>
+  <rect x="1" y="1" width="1198" height="398" rx="27" fill="none" stroke="#3B302C" stroke-width="2"/>
+  <rect width="670" height="400" rx="28" fill="url(#warm)"/>
+
+  <g id="title-block" transform="translate(58 44)">
+    <g>
+      <rect width="288" height="34" rx="17" fill="#2B221F" stroke="#55433C"/>
+      <circle cx="18" cy="17" r="5" fill="#FD5732"/>
+      <text x="32" y="22" fill="#D9CBC4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" letter-spacing="1.5">AGENT-NATIVE CONTENT SKILL</text>
+    </g>
+
+    <text x="0" y="108" fill="#FFF8F4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="66" font-weight="760" letter-spacing="-2">NewsCrawler</text>
+    <text x="0" y="158" fill="#FFF8F4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="29" font-weight="680">Article content, not the whole webpage</text>
+    <text x="0" y="202" fill="#BFAFA7" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18">One URL becomes ordered, reasoning-ready JSON / Markdown</text>
+
+    <g transform="translate(0 252)" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700">
+      <rect width="132" height="36" rx="18" fill="url(#coral)"/>
+      <text x="22" y="23" fill="#FFFFFF">SKILL FIRST</text>
+      <rect x="144" width="144" height="36" rx="18" fill="#2B221F" stroke="#514039"/>
+      <text x="166" y="23" fill="#D9CBC4">12 PLATFORMS</text>
+      <rect x="300" width="152" height="36" rx="18" fill="#2B221F" stroke="#514039"/>
+      <text x="322" y="23" fill="#D9CBC4">LOCAL CODE</text>
+    </g>
+
+    <text x="0" y="334" fill="#8E7F78" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">NO BROWSER DOM · NO SERVICE REQUIRED</text>
+  </g>
+
+  <g id="token-proof" transform="translate(704 42)">
+    <rect width="438" height="316" rx="22" fill="#211A18" stroke="#54423B"/>
+    <text x="24" y="35" fill="#FFB787" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" letter-spacing="1.2">REAL TOKEN RUN · DETIK · 2026-07-20</text>
+
+    <text x="24" y="108" fill="#FFF8F4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="65" font-weight="780" letter-spacing="-2">97.11%</text>
+    <text x="276" y="83" fill="#FFB787" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700">FEWER</text>
+    <text x="276" y="106" fill="#FFB787" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700">TOKENS</text>
+    <text x="24" y="135" fill="#A99A92" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15">Structured JSON vs. browser-rendered DOM</text>
+
+    <g transform="translate(24 166)">
+      <text x="0" y="13" fill="#C9BBB4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">BROWSER DOM</text>
+      <text x="366" y="13" fill="#FFF8F4" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">59,788</text>
+      <rect y="23" width="390" height="12" rx="6" fill="#483933"/>
+      <rect y="23" width="390" height="12" rx="6" fill="#7C6860"/>
+
+      <text x="0" y="67" fill="#C9BBB4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">SKILL JSON</text>
+      <text x="366" y="67" fill="#FFB787" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">1,730</text>
+      <rect y="77" width="390" height="12" rx="6" fill="#483933"/>
+      <rect y="77" width="12" height="12" rx="6" fill="#FD5732"/>
+
+      <text x="0" y="121" fill="#C9BBB4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">SKILL MARKDOWN</text>
+      <text x="366" y="121" fill="#FFF8F4" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">633</text>
+      <rect y="131" width="390" height="12" rx="6" fill="#483933"/>
+      <rect y="131" width="5" height="12" rx="3" fill="#FFF8F4"/>
+    </g>
+  </g>
+</svg>
