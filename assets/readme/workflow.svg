@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="410" viewBox="0 0 1200 410" role="img" aria-labelledby="title desc">
+  <title id="title">NewsCrawler Skill 工作流程</title>
+  <desc id="desc">Agent 把 URL 交给 news-extractor Skill，Skill 用平台适配器提取正文并返回结构化数据，避免把网页 DOM 放进上下文。</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0L10 5L0 10Z" fill="#C64A2E"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="410" rx="28" fill="#FFF8F4"/>
+  <rect x="1" y="1" width="1198" height="408" rx="27" fill="none" stroke="#E5D6CE" stroke-width="2"/>
+
+  <text x="56" y="60" fill="#241C19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="34" font-weight="720">Agent 的短路径，不是网页的展示层</text>
+  <text x="56" y="92" fill="#786A63" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="17">平台差异由本地代码消化，模型上下文只接收可推理的内容</text>
+
+  <g id="agent-input" transform="translate(56 132)">
+    <text x="0" y="0" fill="#A03A25" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700">01 · AGENT</text>
+    <rect y="18" width="220" height="200" rx="18" fill="#FFFFFF" stroke="#E6D5CD"/>
+    <rect x="20" y="40" width="180" height="44" rx="12" fill="#FFF1EA"/>
+    <text x="38" y="67" fill="#8E3523" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">ARTICLE URL</text>
+    <text x="22" y="120" fill="#241C19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19" font-weight="650">“提取并总结</text>
+    <text x="22" y="148" fill="#241C19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19" font-weight="650">这篇文章”</text>
+    <text x="22" y="184" fill="#786A63" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="14">只提供链接和任务</text>
+  </g>
+
+  <path d="M294 250H334" stroke="#C64A2E" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g id="skill-router" transform="translate(354 132)">
+    <text x="0" y="0" fill="#A03A25" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700">02 · SKILL</text>
+    <rect y="18" width="220" height="200" rx="18" fill="#241C19"/>
+    <rect x="20" y="40" width="180" height="42" rx="12" fill="#352A26" stroke="#5C4840"/>
+    <text x="38" y="66" fill="#FFB787" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">news-extractor</text>
+    <path d="M110 82V112" stroke="#FD5732" stroke-width="2"/>
+    <circle cx="110" cy="112" r="6" fill="#FD5732"/>
+    <text x="44" y="146" fill="#FFF8F4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="18" font-weight="650">识别平台</text>
+    <text x="44" y="176" fill="#B9AAA2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">route URL → adapter</text>
+  </g>
+
+  <path d="M592 250H632" stroke="#C64A2E" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g id="code-extraction" transform="translate(652 132)">
+    <text x="0" y="0" fill="#A03A25" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700">03 · CODE</text>
+    <rect y="18" width="220" height="200" rx="18" fill="#FFFFFF" stroke="#E6D5CD"/>
+    <rect x="18" y="38" width="184" height="36" rx="10" fill="#FFF1EA"/>
+    <text x="38" y="61" fill="#8E3523" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">fetch article</text>
+    <rect x="18" y="86" width="184" height="36" rx="10" fill="#FFF1EA"/>
+    <text x="38" y="109" fill="#8E3523" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">parse main content</text>
+    <rect x="18" y="134" width="184" height="36" rx="10" fill="#FFF1EA"/>
+    <text x="38" y="157" fill="#8E3523" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">preserve order</text>
+    <text x="27" y="197" fill="#786A63" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="14">不把网页 DOM 交给模型</text>
+  </g>
+
+  <path d="M890 250H930" stroke="#C64A2E" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g id="structured-output" transform="translate(950 132)">
+    <text x="0" y="0" fill="#A03A25" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700">04 · CONTEXT</text>
+    <rect y="18" width="194" height="128" rx="18" fill="#241C19"/>
+    <text x="20" y="50" fill="#FFB787" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">NewsItem {</text>
+    <text x="34" y="77" fill="#FFF8F4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">title, meta,</text>
+    <text x="34" y="101" fill="#FFF8F4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">ordered contents</text>
+    <text x="20" y="126" fill="#FFB787" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">}</text>
+
+    <rect y="158" width="90" height="42" rx="12" fill="#FD5732"/>
+    <text x="24" y="184" fill="#FFFFFF" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700">JSON</text>
+    <rect x="100" y="158" width="94" height="42" rx="12" fill="#FFFFFF" stroke="#E6D5CD"/>
+    <text x="112" y="184" fill="#5F5049" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700">MARKDOWN</text>
+  </g>
+
+  <text x="56" y="376" fill="#8E7F78" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">URL → SKILL → PLATFORM CODE → STRUCTURED CONTEXT → SUMMARY / SEARCH / STORAGE / ANALYSIS</text>
+</svg>

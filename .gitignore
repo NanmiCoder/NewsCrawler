@@ -183,3 +183,5 @@ news-extractor-ui/backend/uv.lock
 
 # Skill output
 output/
+/.agents/
+/.claude/skills/*/test_output/

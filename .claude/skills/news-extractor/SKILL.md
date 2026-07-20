@@ -1,13 +1,16 @@
 ---
 name: news-extractor
 description: 新闻站点内容提取。支持 12 个平台：微信公众号、今日头条、网易新闻、搜狐新闻、腾讯新闻、BBC News、CNN News、Twitter/X、Lenny's Newsletter、Naver Blog、Detik News、Quora。当用户需要提取新闻内容、抓取公众号文章、爬取新闻、或获取新闻JSON/Markdown时激活。
+license: GPL-3.0
 ---
 
 # News Extractor Skill
 
 从主流新闻平台提取文章内容，输出 JSON 和 Markdown 格式。
 
-**独立可迁移**：本 Skill 包含所有必需代码，无外部依赖，可直接复制到其他项目使用。
+**标准兼容、独立可迁移**：本目录遵循 Agent Skills 规范，包含完整的 `SKILL.md`、脚本与依赖，不依赖 NewsCrawler 的其他模块。通过兼容的 Skills 安装器安装后，运行一次 `uv sync` 即可使用。
+
+运行环境需要 Python 3.9+、`uv` 和目标站点的网络访问。
 
 ## 支持平台 (12)
 
@@ -38,7 +41,7 @@ description: 新闻站点内容提取。支持 12 个平台：微信公众号、
 本 skill 使用 uv 管理依赖。首次使用前需要安装：
 
 ```bash
-cd .claude/skills/news-extractor
+cd <Agent Skills 目录>/news-extractor
 uv sync
 ```
 
@@ -60,23 +63,25 @@ uv sync
 ### 基本用法
 
 ```bash
+# 以下命令均在 news-extractor Skill 目录内执行
+
 # 提取新闻，自动检测平台，输出 JSON + Markdown
-uv run .claude/skills/news-extractor/scripts/extract_news.py "URL"
+uv run scripts/extract_news.py "URL"
 
 # 指定输出目录
-uv run .claude/skills/news-extractor/scripts/extract_news.py "URL" --output ./output
+uv run scripts/extract_news.py "URL" --output ./output
 
 # 仅输出 JSON
-uv run .claude/skills/news-extractor/scripts/extract_news.py "URL" --format json
+uv run scripts/extract_news.py "URL" --format json
 
 # 仅输出 Markdown
-uv run .claude/skills/news-extractor/scripts/extract_news.py "URL" --format markdown
+uv run scripts/extract_news.py "URL" --format markdown
 
 # Twitter 受保护推文 (需要 Cookie)
-uv run .claude/skills/news-extractor/scripts/extract_news.py "URL" --cookie "auth_token=xxx; ct0=yyy"
+uv run scripts/extract_news.py "URL" --cookie "auth_token=xxx; ct0=yyy"
 
 # 列出支持的平台
-uv run .claude/skills/news-extractor/scripts/extract_news.py --list-platforms
+uv run scripts/extract_news.py --list-platforms
 ```
 
 ### 输出文件
@@ -149,14 +154,14 @@ uv run .claude/skills/news-extractor/scripts/extract_news.py --list-platforms
 ### 提取微信公众号文章
 
 ```bash
-uv run .claude/skills/news-extractor/scripts/extract_news.py \
+uv run scripts/extract_news.py \
   "https://mp.weixin.qq.com/s/ebMzDPu2zMT_mRgYgtL6eQ"
 ```
 
 ### 提取 BBC 新闻
 
 ```bash
-uv run .claude/skills/news-extractor/scripts/extract_news.py \
+uv run scripts/extract_news.py \
   "https://www.bbc.com/news/articles/c797qlx93j0o"
 ```
 
@@ -164,11 +169,11 @@ uv run .claude/skills/news-extractor/scripts/extract_news.py \
 
 ```bash
 # 公开推文 (无需认证)
-uv run .claude/skills/news-extractor/scripts/extract_news.py \
+uv run scripts/extract_news.py \
   "https://x.com/BarackObama/status/896523232098078720"
 
 # 受保护推文 (需要 Cookie)
-uv run .claude/skills/news-extractor/scripts/extract_news.py \
+uv run scripts/extract_news.py \
   "https://x.com/user/status/123456" --cookie "auth_token=xxx; ct0=yyy"
 ```
 
