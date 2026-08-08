@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import logging
 import re
@@ -171,7 +172,53 @@ class WechatContentParser:
             self._process_content_node(node)
 
         contents = [item for item in self._contents if item.content.strip()]
+
+        # Also extract images from SSR data (image articles have most images there)
+        ssr_images = self._extract_ssr_images(html_content)
+        existing_image_urls = {item.content for item in contents if item.type == ContentType.IMAGE}
+        for ssr_img in ssr_images:
+            if ssr_img.content not in existing_image_urls:
+                contents.insert(0, ssr_img)
+                existing_image_urls.add(ssr_img.content)
+
         return self._remove_duplicate_contents(contents)
+
+    def _extract_ssr_images(self, html_content: str) -> List[ContentItem]:
+        """Extract images from SSR/embedded data (covers image articles type 8).
+
+        WeChat image articles store most images inside inline <script> data blocks
+        rather than in the visible DOM. This method uses three fallback strategies
+        to find them all.
+        """
+        images: List[ContentItem] = []
+
+        # Method 1: window.picture_page_info_list (primary source for image articles)
+        ssr_images = _parse_ssr_image_list(html_content)
+        images.extend(ssr_images)
+
+        # Method 2: __QMTPL_SSR_DATA__ / cgiDataNew (fallback)
+        ssr_data = _parse_ssr_data(html_content)
+        if ssr_data:
+            picture_list = ssr_data.get("picture_page_info_list", [])
+            for pic_info in picture_list:
+                pic_cdn = pic_info.get("cdn_url", "")
+                if pic_cdn:
+                    pic_cdn = pic_cdn.replace("&amp;", "&")
+                    images.append(ContentItem(type=ContentType.IMAGE, content=pic_cdn))
+
+        # Method 3: Global cdn_url scan across all <script> blocks.
+        # Some WeChat article types embed image lists as plain JS objects
+        # scattered across multiple inline scripts (e.g. type-8 image articles).
+        # We scan for cdn_url: '...' patterns and pick up only WeChat CDN JPEGs.
+        cdn_urls_seen = {item.content for item in images}
+        for m in re.finditer(r"""cdn_url\s*:\s*['"]([^'"]+)['"]""", html_content):
+            url = m.group(1)
+            if "mmbiz.qpic.cn" in url and ("wx_fmt=jpeg" in url or "wx_fmt=png" in url):
+                if url not in cdn_urls_seen:
+                    images.append(ContentItem(type=ContentType.IMAGE, content=url))
+                    cdn_urls_seen.add(url)
+
+        return images
 
     def parse(self, html_content: str) -> List[ContentItem]:
         return self.parse_html_to_news_content(html_content)
@@ -203,6 +250,13 @@ class WechatContentParser:
         if node.root.tag in ["script", "style"]:
             return None
         text = node.xpath("string(.)").get("").strip()
+        if not text:
+            return None
+        # Unescape HTML entities (&lt;→<, &gt;→>, &quot;→", &amp;→&)
+        text = html.unescape(text)
+        # Strip residual HTML tags (e.g. topic links) but keep inner text
+        text = re.sub(r'<[^>]+>', '', text)
+        text = text.strip()
         if not text:
             return None
         return text
@@ -297,37 +351,82 @@ class WechatContentParser:
             return
 
     def parse_ssr_content(self, html_content: str) -> List[ContentItem]:
-        contents = []
+        """Parse SSR/inline data when js_content div is not present.
+
+        WeChat articles rendered as image cards (type 8) or loaded dynamically
+        don't have a populated js_content div in the initial HTML. Instead the
+        data lives in inline <script> blocks and meta tags.
+        """
+        contents: List[ContentItem] = []
+
+        # --- Images: try multiple sources ---
         ssr_data_dict = _parse_ssr_data(html_content)
 
+        # Method 1: picture_page_info_list from SSR data
         if ssr_data_dict:
-            try:
-                picture_list = ssr_data_dict.get("picture_page_info_list", [])
-                if picture_list:
-                    for pic_info in picture_list:
-                        cdn_url = pic_info.get("cdn_url", "")
-                        if cdn_url:
-                            cdn_url = cdn_url.replace("&amp;", "&")
-                            contents.append(ContentItem(type=ContentType.IMAGE, content=cdn_url))
+            picture_list = ssr_data_dict.get("picture_page_info_list", [])
+            for pic_info in picture_list:
+                pic_url = pic_info.get("cdn_url", "")
+                if pic_url:
+                    pic_url = pic_url.replace("&amp;", "&")
+                    contents.append(ContentItem(type=ContentType.IMAGE, content=pic_url))
 
-                if not picture_list:
-                    contents.extend(_parse_ssr_image_list(html_content))
+        # Method 2: window.picture_page_info_list (regex-based, works for type-8 articles)
+        ssr_image_list = _parse_ssr_image_list(html_content)
+        existing_urls = {item.content for item in contents if item.type == ContentType.IMAGE}
+        for img in ssr_image_list:
+            if img.content not in existing_urls:
+                contents.append(img)
+                existing_urls.add(img.content)
 
-                desc = ssr_data_dict.get("desc") or ssr_data_dict.get("content_noencode")
-                title = ssr_data_dict.get("title")
-                final_desc = desc or title
-                if final_desc:
-                    desc_list = final_desc.split("\n")
-                    for desc_item in desc_list:
-                        if not desc_item:
-                            continue
-                        contents.append(
-                            ContentItem(type=ContentType.TEXT, content=desc_item.strip())
-                        )
-            except (json.JSONDecodeError, Exception) as e:
-                logger.error(f"Failed to parse SSR data: {str(e)}")
+        # Method 3: Global cdn_url scan across all <script> blocks
+        for m in re.finditer(r"""cdn_url\s*:\s*['"]([^'"]+)['"]""", html_content):
+            url = m.group(1)
+            if "mmbiz.qpic.cn" in url and ("wx_fmt=jpeg" in url or "wx_fmt=png" in url):
+                if url not in existing_urls:
+                    contents.append(ContentItem(type=ContentType.IMAGE, content=url))
+                    existing_urls.add(url)
 
-        return contents
+        # --- Text: try multiple sources ---
+        text_source = ""
+
+        # Source 1: SSR data desc / content_noencode
+        if ssr_data_dict:
+            desc = ssr_data_dict.get("desc") or ssr_data_dict.get("content_noencode")
+            if desc:
+                text_source = desc
+
+        # Source 2: Meta description (contains article body for image articles)
+        if not text_source:
+            meta_match = re.search(
+                r'<meta[^>]*name="description"[^>]*content="([^"]+)"',
+                html_content,
+            )
+            if meta_match:
+                text_source = meta_match.group(1)
+
+        # Source 3: og:title (bare minimum)
+        if not text_source:
+            og_match = re.search(
+                r'<meta[^>]*property="og:title"[^>]*content="([^"]+)"',
+                html_content,
+            )
+            if og_match:
+                text_source = og_match.group(1)
+
+        if text_source:
+            # Decode JS-style escape sequences and HTML entities
+            text_source = _js_decode(text_source)
+            text_source = html.unescape(text_source)
+            # Strip topic-link HTML tags, keep hashtag text
+            text_source = re.sub(r'<[^>]+>', '', text_source)
+            # Split into paragraphs
+            for line in text_source.split('\n'):
+                line = line.strip()
+                if line:
+                    contents.append(ContentItem(type=ContentType.TEXT, content=line))
+
+        return self._remove_duplicate_contents(contents)
 
 
 class WeChatNewsCrawler(BaseNewsCrawler):
