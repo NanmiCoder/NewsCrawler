@@ -3,11 +3,13 @@
 # date: 2024-11-09
 # description: 采集公众号文章详情
 
+import hashlib
 import json
 import logging
 from datetime import datetime
 import re
 from typing import List, Optional
+from urllib.parse import parse_qs, urlparse
 
 import demjson3
 from parsel import Selector
@@ -523,10 +525,37 @@ class WeChatNewsCrawler(BaseNewsCrawler):
         return "https://mp.weixin.qq.com"
 
     def get_article_id(self) -> str:
-        try:
-            return self.new_url.split("/s/")[1].split("?")[0]
-        except Exception as exc:  # pragma: no cover - defensive branch
-            raise ValueError("解析文章ID失败，请检查URL是否正确") from exc
+        """解析文章ID，兼容微信的多种 URL 形态
+
+        - https://mp.weixin.qq.com/s/{id}                          短链
+        - https://mp.weixin.qq.com/s?__biz=xx&mid=xx&idx=1&sn={sn} 旧版永久链接
+        - https://mp.weixin.qq.com/s?src=11&...&signature=xx       搜索结果跳转链接
+
+        Returns:
+            str: 文章唯一标识
+
+        Raises:
+            ValueError: URL 中不含任何可用标识
+        """
+        parsed = urlparse(self.new_url)
+
+        if "/s/" in parsed.path:
+            path_id = parsed.path.split("/s/", 1)[1].strip("/")
+            if path_id:
+                return path_id
+
+        query = parse_qs(parsed.query)
+        # sn 是旧版链接里的文章唯一标识
+        sn = (query.get("sn") or [""])[0].strip()
+        if sn:
+            return sn
+
+        # 搜索跳转链接没有 sn，用签名摘要保证文件名唯一且可复现
+        signature = (query.get("signature") or [""])[0].strip()
+        if signature:
+            return hashlib.md5(signature.encode("utf-8")).hexdigest()[:16]
+
+        raise ValueError("解析文章ID失败，请检查URL是否正确")
 
     def build_fetch_request(self) -> FetchRequest:
         request = super().build_fetch_request()
