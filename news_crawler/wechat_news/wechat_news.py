@@ -85,6 +85,27 @@ def _js_decode(s: str) -> str:
              .replace('\\x0a', '\n'))
 
 
+def _strip_multiply_by_one(match_obj: "re.Match") -> str:
+    """还原 JS 里 '字面量' * 1 的写法
+
+    微信页面用 'xxx' * 1 做字符串转数字，左操作数不一定是数字，
+    例如 link_type: 'LINK_TYPE_MP_APPMSG' * 1。只匹配数字会让 * 残留，
+    导致 demjson3 解析整个对象失败。
+
+    Args:
+        match_obj (re.Match): 正则匹配对象，group(1) 为引号内的原始内容
+
+    Returns:
+        str: 纯数字返回数字字面量，其余保留为字符串
+    """
+    raw = match_obj.group(1)
+    if re.fullmatch(r"-?\d+(?:\.\d+)?", raw):
+        # 纯数字仍还原成数字字面量，保持字段类型与旧版本一致
+        return raw
+    # 非数字在 JS 里结果是 NaN，保留原始字符串比丢字段更有用
+    return f"'{raw}'"
+
+
 def _parse_cgi_data_new(html: str) -> Optional[dict]:
     """解析新版window.cgiDataNew数据（2024年微信公众号更新后的格式）
 
@@ -123,8 +144,12 @@ def _parse_cgi_data_new(html: str) -> Optional[dict]:
             js_obj_str
         )
 
-        # 步骤2: 处理 'xxx' * 1 这种字符串转数字的JavaScript表达式（支持整数和浮点数）
-        js_obj_str = re.sub(r"'([\d.]+)'\s*\*\s*1", r'\1', js_obj_str)
+        # 步骤2: 处理 'xxx' * 1 这种字符串转数字的JavaScript表达式（左操作数不一定是数字）
+        js_obj_str = re.sub(
+            r"'((?:[^'\\]|\\.)*)'\s*\*\s*1(?!\d)",
+            _strip_multiply_by_one,
+            js_obj_str,
+        )
 
         # 步骤3: 使用demjson3解析JavaScript对象为Python字典
         parsed_data = demjson3.decode(js_obj_str)
@@ -559,15 +584,40 @@ class WeChatNewsCrawler(BaseNewsCrawler):
             author_url="",
         )
 
+    @staticmethod
+    def _parse_title_from_dom(html_content: str) -> str:
+        """从 HTML 里兜底取标题
+
+        h1#activity-name 内常有换行和内嵌标签，取 text() 只会拿到第一个空白文本节点，
+        必须用 string() 才能拿到完整标题。
+
+        Args:
+            html_content (str): 页面HTML内容
+
+        Returns:
+            str: 标题，取不到返回空字符串
+        """
+        selector = Selector(text=html_content)
+        title = (
+            selector.xpath('string(//h1[@id="activity-name"])').get("") or ""
+        ).strip()
+        if title:
+            return title
+
+        title = (
+            selector.xpath('//meta[@property="og:title"]/@content').get("") or ""
+        ).strip()
+        if title:
+            return title
+
+        match = re.search(r"var\s+msg_title\s*=\s*'((?:[^'\\]|\\.)*)'", html_content)
+        return _js_decode(match.group(1)).strip() if match else ""
+
     def parse_content(self, html: str) -> NewsItem:
         ssr_data = _parse_ssr_data(html)
-        if ssr_data:            
-            title = (ssr_data.get("title") or "").strip()
-        else:
-            selector = Selector(text=html)
-            title = (
-                selector.xpath('//h1[@id="activity-name"]/text()').get("") or ""
-            ).strip()
+        title = (ssr_data.get("title") or "").strip() if ssr_data else ""
+        if not title:
+            title = self._parse_title_from_dom(html)
 
         if not title:
             raise ValueError("Failed to get title")
